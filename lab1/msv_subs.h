@@ -42,7 +42,6 @@ typedef struct msv_struct {
 		uint32_t blocksize;  /*!< The number of samples per block */
 		float prevSquared;   /*!< Running sum of squared values */
 		float * history;     /*!< History of the last M samples */
-		uint32_t samples;    /*!< Tracks how many samples are in the history */
 		uint32_t histIndex;  /*!< Index of history[] */
 
 } MSV_STRUCT_T;
@@ -56,7 +55,7 @@ typedef struct msv_struct {
  *			    samples.
  */
 
-MSV_STRUCT_T init_msv(
+MSV_STRUCT_T * init_msv(
 	uint32_t M, 				   /*!< [in] The number of samples to average over */
 	uint32_t blocksize		 /*!< [in] The number of samples in each block */
 );

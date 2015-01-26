@@ -28,20 +28,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-MSV_STRUCT_T init_msv(uint32_t M, uint32_t blocksize){
+MSV_STRUCT_T * init_msv(uint32_t M, uint32_t blocksize){
 
-	uint32_t i;
 	MSV_STRUCT_T s;
 
 	s.M = M;
 	s.blocksize = blocksize;
-	s.history = malloc(sizeof(float)*(M-1));
-	
-	for(i=0;i<M;i++){
-		s.history[i] = 0;
+	s.prevSquared = 0;
+	s.histIndex = 0;
+	s.history = calloc(M-1,sizeof(float));
+
+  return &s;
+
+}
+
+float * calc_msv(float * x, MSV_STRUCT_T * s){
+
+	//Allocate the output array
+	float * y;
+	y = calloc(s.blocksize,sizeof(float));
+
+	uint32_t i;
+
+	for(i=0;i<s.blocksize;i++){
+
+			y[i] = (s.prevSquared + x[i]^2) / s.M;
+
+			s.prevSquared -= s.history(s.histIndex);
+			s.prevSquared += x[i]^2;
+			s.history(s.histIndex) = x[i];
+			s.histIndex += 1;
+
+			if(s.histIndex == (s.M-1){
+				s.histIndex -= (s.M-1);
+			}
+
 	}
 
-  return s;
+
+
+	return &y;
 
 }
 
