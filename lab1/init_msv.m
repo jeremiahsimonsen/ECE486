@@ -6,9 +6,8 @@ function s = init_msv(M,blocksize)
 %   field 'prevSquared' is a running sum of the squares of the most recent
 %   M samples. 'history' is a circular buffer containing the last M-1
 %   elements of the sample, necessary in calculating the running mean
-%   squared value for subsequent calls of the calc_msv() function.
-%   'samples' is the number of samples contained in history. 'histIndex' is
-%   the current location in the circular history buffer.
+%   squared value for subsequent calls of the calc_msv()function.
+%   'histIndex' is the current location in the circular history buffer.
 %
 %   Example: If M = 4 and blocksize = 10 then
 %                s = init_msv(4,10) 
@@ -18,9 +17,8 @@ function s = init_msv(M,blocksize)
 %				prevSquared: 0
 %				history: [0 
 %						  0 
-%						  0].
-%				samples: 0
-% 				histIndex: 1
+%						  0]
+% 				histIndex: 1.
 
 % Authors: Jacob Allenwood, Travis Russell, Jeremiah Simonsen
 % ECE 486 - Laboratory 1
