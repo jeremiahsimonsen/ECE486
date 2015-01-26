@@ -31,17 +31,19 @@
 #ifndef ECE486_MSV_SUBS_H
 #define ECE486_MSV_SUBS_H
 
+#include <stdint.h>
+
  /*!
   * @brief Structure for mean squared value calculation
   */
 typedef struct msv_struct {
 
-	 	uint M; /*!< The number of samples to average over */
-		uint blocksize; /*!< The number of samples per block */
-		float prevSquared = 0; /*!< Running sum of squared values */
-		float * history; /*!< History of the last M samples */
-		uint samples = 0; /*!< Tracks how many samples are in the history */
-		uint histIndex = 1; /*!< Index of history[] */
+	 	uint32_t M;          /*!< The number of samples to average over */
+		uint32_t blocksize;  /*!< The number of samples per block */
+		float prevSquared;   /*!< Running sum of squared values */
+		float * history;     /*!< History of the last M samples */
+		uint32_t samples;    /*!< Tracks how many samples are in the history */
+		uint32_t histIndex;  /*!< Index of history[] */
 
 } MSV_STRUCT_T;
 
@@ -54,9 +56,9 @@ typedef struct msv_struct {
  *			    samples.
  */
 
-MSV_STRUCT_T * init_msv(
-	uint M, 				   /*!< [in] The number of samples to average over */
-	uint blocksize		 /*!< [in] The number of samples in each block */
+MSV_STRUCT_T init_msv(
+	uint32_t M, 				   /*!< [in] The number of samples to average over */
+	uint32_t blocksize		 /*!< [in] The number of samples in each block */
 );
 
 /*!

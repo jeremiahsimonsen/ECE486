@@ -26,10 +26,11 @@
 
 #include "msv_subs.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-MSV_STRUCT_T * init_msv(uint M, uint blocksize){
+MSV_STRUCT_T init_msv(uint32_t M, uint32_t blocksize){
 
-	uint i;
+	uint32_t i;
 	MSV_STRUCT_T s;
 
 	s.M = M;
@@ -40,6 +41,7 @@ MSV_STRUCT_T * init_msv(uint M, uint blocksize){
 		s.history[i] = 0;
 	}
 
-  
+  return s;
 
 }
+

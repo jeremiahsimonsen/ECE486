@@ -33,6 +33,12 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
 
 all: $(TARGET) $(TARGET).bin
 
+group02_lab1.o: lab1.c msv_subs.o
+	$(CC) -c lab1.c -o group02_lab1.o
+
+msv_subs.o: msv_subs.c msv_subs.h
+	$(CC) -c msv_subs.c -o msv_subs.o
+
 debug : CFLAGS += -DDEBUG -g -Og
 debug : LDFLAGS += -Wl,-Map,$(TARGET).map
 
