@@ -30,15 +30,17 @@
 
 MSV_STRUCT_T * init_msv(uint32_t M, uint32_t blocksize){
 
-	MSV_STRUCT_T s;
+	MSV_STRUCT_T * s;
 
-	s.M = M;
-	s.blocksize = blocksize;
-	s.prevSquared = 0;
-	s.histIndex = 0;
-	s.history = calloc(M-1,sizeof(float));
+	s = (MSV_STRUCT_T *) malloc(sizeof(MSV_STRUCT_T));
 
-  return &s;
+	s->M = M;
+	s->blocksize = blocksize;
+	s->prevSquared = 0;
+	s->histIndex = 0;
+	s->history = calloc(M-1,sizeof(float));
+
+  return s;
 
 }
 
@@ -46,28 +48,28 @@ float * calc_msv(float * x, MSV_STRUCT_T * s){
 
 	//Allocate the output array
 	float * y;
-	y = calloc(s.blocksize,sizeof(float));
+	y = calloc(s->blocksize,sizeof(float));
 
 	uint32_t i;
 
-	for(i=0;i<s.blocksize;i++){
+	for(i=0;i<s->blocksize;i++){
 
-			y[i] = (s.prevSquared + x[i]^2) / s.M;
+			y[i] = (s->prevSquared + x[i]*x[i]) / s->M;
 
-			s.prevSquared -= s.history(s.histIndex);
-			s.prevSquared += x[i]^2;
-			s.history(s.histIndex) = x[i];
-			s.histIndex += 1;
+			s->prevSquared -= (s->history[s->histIndex])*(s->history[s->histIndex]);
+			s->prevSquared += x[i]*x[i];
+			s->history[s->histIndex] = x[i];
+			s->histIndex += 1;
 
-			if(s.histIndex == (s.M-1){
-				s.histIndex -= (s.M-1);
+			if(s->histIndex == (s->M-1)){
+				s->histIndex -= (s->M-1);
 			}
 
 	}
 
 
 
-	return &y;
+	return y;
 
 }
 
