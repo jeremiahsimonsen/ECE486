@@ -21,7 +21,7 @@ int main(){
 	}
 	printf("\n");
 	for(i=0;i<s->blocksize;i++){
-		printf("%f ", y2[i])
+		printf("%f ", y2[i]);
 	}
 
 	return 0;

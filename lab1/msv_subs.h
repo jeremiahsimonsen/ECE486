@@ -17,14 +17,18 @@
  * The init_msv() function initializes an MSV_STRUCT_T variable, allocating
  * memory for all fields. The function takes an integer 'M' indicating the
  * number of samples to average over and an integer 'blocksize' indicating the
- * number of samples in each block of data to be processed. The function returns
- * a pointer to an MSV_STRUCT_T.
+ * number of samples in each block of data to be processed. A 'history' array 
+ * of 'M-1' floating point numbers is allocated to store the last 'M-1' input 
+ * samples. The index of 'history' is held by the variable 'histIndex', which is
+ * initialized to 0. The variable 'prevSquared', which holds the running sum of 
+ * squared inputs, is also initialized to 0.
+ * The function returns a pointer to an MSV_STRUCT_T.
  *
  * The calc_msv() function performs the running mean-square-value calculation on
- * a block of samples. It takes a pointer to a float 'x' - the block of samples-
+ * a block of samples. It takes a pointer to a float 'x' - the block of samples -
  * and a pointer to an MSV_STRUCT_T 's' - the struct containing the fields 
- * necessary for the calculations. The function returns a pointer to an float,
- * the array of running mean-square-values.
+ * necessary for the calculations. The function returns a pointer to an array
+ * of floats, which contains the output mean-square-values.
  * 
  */
 
@@ -36,6 +40,7 @@
  /*!
   * @brief Structure for mean squared value calculation
   */
+
 typedef struct msv_struct {
 
 	 	uint32_t M;          /*!< The number of samples to average over */
@@ -68,9 +73,20 @@ MSV_STRUCT_T * init_msv(
  */
 
 float * calc_msv(
-	float * x,         //!< [in] Pointer to an array of floats to be operated upon
-	MSV_STRUCT_T * s   /*!< [in] Pointer to an MSV_STRUCT_T containing additional
+	float * x,         /*!< [in] Pointer to an array of floats to be operated upon */
+	MSV_STRUCT_T * s   /*!< [in,out] Pointer to an MSV_STRUCT_T containing additional
                           fields necessary for the calculation */
+);
+
+/*!
+ * @brief De-allocates the memory required for a mean squared value calculation
+ *
+ */
+
+void destroy_msv(
+	MSV_STRUCT_T * s,		/*!< [in] Pointer to an MSV_STRUCT_T containing required
+								fields for a mean squared value calculation. */
+	float * y				/*!< [in] Pointer to an array of floating point output samples */
 );
 
 #endif

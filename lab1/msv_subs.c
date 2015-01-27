@@ -48,7 +48,7 @@ float * calc_msv(float * x, MSV_STRUCT_T * s){
 
 	//Allocate the output array
 	float * y;
-	y = calloc(s->blocksize,sizeof(float));
+	y = (float *) calloc(s->blocksize,sizeof(float));
 
 	uint32_t i;
 
@@ -67,9 +67,22 @@ float * calc_msv(float * x, MSV_STRUCT_T * s){
 
 	}
 
-
-
 	return y;
+
+}
+
+void destroy_msv(MSV_STRUCT_T * s, float * y){
+
+	uint32_t i;
+
+	//Free output array memory
+	free(y);
+
+	//Free circular buffer
+	free(s->history);
+
+	//Free the rest of the structure
+	free(s);
 
 }
 
