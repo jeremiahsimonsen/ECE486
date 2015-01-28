@@ -73,8 +73,6 @@ float * calc_msv(float * x, MSV_STRUCT_T * s){
 
 void destroy_msv(MSV_STRUCT_T * s, float * y){
 
-	uint32_t i;
-
 	//Free output array memory
 	free(y);
 
