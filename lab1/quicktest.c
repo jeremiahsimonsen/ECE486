@@ -22,6 +22,9 @@ int main(){
 	for(i=0;i<s->blocksize;i++){
 		printf("%f ", y[i]);
 	}
+
+	//De-allocate memory
+	destroy_msv(s, y);
 	
 	return 0;
 
