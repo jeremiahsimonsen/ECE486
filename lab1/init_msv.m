@@ -22,7 +22,7 @@ function s = init_msv(M,blocksize)
 
 % Authors: Jacob Allenwood, Travis Russell, Jeremiah Simonsen
 % ECE 486 - Laboratory 1
-% January 21, 2015
+% January 30, 2015
 
 s = struct( 'M',M, ...
 			'blocksize',blocksize, ...

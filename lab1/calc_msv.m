@@ -35,7 +35,7 @@ function [y,s] = calc_msv(x,s)
 
 % Authors: Jacob Allenwood, Travis Russell, Jeremiah Simonsen
 % ECE 486 - Laboratory 1
-% January 22, 2015
+% January 30, 2015
 
 x = x(:);	% Force the input sample vector to be a column vector
 
