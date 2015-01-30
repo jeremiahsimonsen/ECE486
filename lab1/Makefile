@@ -31,7 +31,7 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
                
 .PHONY : all flash clean debug
 
-all: $(TARGET) $(TARGET).bin
+all: lab1_test $(TARGET) $(TARGET).bin
 
 group02_lab1.o: lab1.c msv_subs.o
 	$(CC) -c lab1.c -o group02_lab1.o
@@ -57,4 +57,4 @@ flash: $(TARGET).bin
 	st-flash write $(TARGET).bin 0x08000000
 
 clean:
-	rm -f $(OBJS) $(TARGET) $(TARGET).bin $(TARGET).map
+	rm -f $(OBJS) $(TARGET) $(TARGET).bin $(TARGET).map lab1
