@@ -8,12 +8,44 @@
 clear all;
 
 %% Test when M < blocksize
+% Should match:
+% y =
+%     0.3333
+%     1.6667
+%     4.6667
+%     9.6667
+%    16.6667
+%    25.6667
+%    36.6667
+% 
+% s = 
+% 
+%               M: 3
+%       blocksize: 7
+%     prevSquared: 85
+%         history: [2x1 double]
+%         samples: 0
+%       histIndex: 2
+
 x1 = [1 2 3 4 5 6 7];
 s = init_msv(3,7);
 [y,s] = calc_msv(x1,s);
 y,s
 
 %% Test when M = blocksize
+% Should match:
+% y =
+% 
+%     0.3333
+%     1.6667
+%     4.6667
+%     9.6667
+%    16.6667
+%    25.6667
+%    36.6667
+%    49.6667
+%    64.6667
+   
 x1 = [1 2 3];
 x2 = [4 5 6];
 x3 = [7 8 9];
