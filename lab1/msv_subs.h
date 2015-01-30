@@ -30,6 +30,9 @@
  * necessary for the calculations. The function returns a pointer to an array
  * of floats, which contains the output mean-square-values.
  * 
+ * The destroy_msv() function de-allocates all memory allocated by init_msv()
+ * and calc_msv(). 
+ * 
  */
 
 #ifndef ECE486_MSV_SUBS_H

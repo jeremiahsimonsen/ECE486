@@ -22,6 +22,10 @@
  * information necessary to perform the calcuations. It returns a float pointer
  * to indicate the array of output running mean-square-values.
  * 
+ * The destroy_msv() function de-allocates all memory required for he mean squared
+ * value calculation. The memory allocated for the MSV_STRUCT_T structure and output
+ * array y[] is freed.
+ * 
  */
 
 #include "msv_subs.h"
@@ -54,13 +58,16 @@ float * calc_msv(float * x, MSV_STRUCT_T * s){
 
 	for(i=0;i<s->blocksize;i++){
 
+			//Store the output value
 			y[i] = (s->prevSquared + x[i]*x[i]) / s->M;
 
+			//Update the circular buffer and history variable
 			s->prevSquared -= (s->history[s->histIndex])*(s->history[s->histIndex]);
 			s->prevSquared += x[i]*x[i];
 			s->history[s->histIndex] = x[i];
 			s->histIndex += 1;
 
+			//Check to see if index is at end of circular buffer
 			if(s->histIndex == (s->M-1)){
 				s->histIndex -= (s->M-1);
 			}
