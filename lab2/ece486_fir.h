@@ -1,7 +1,7 @@
 /*!
  * @file
  * 
- * @brief Header file for finite impulse response (FIR) functions for ECE486
+ * @brief ECE 486 Spring 2015 Lab 2 FIR header file
  * 
  * @author ECE486 Lab Group 2
  * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
@@ -26,6 +26,11 @@
  * 
  */
 
+#ifndef ECE486_FIR_H
+#define ECE486_FIR_H
+
+#include <stdint.h>
+
  /*!
   * @brief Structure for FIR implementation containing coefficients and filter 
   * state
@@ -33,11 +38,11 @@
 
 typedef struct your_fir_struct {
 
-  float *fir_coefs,   /*!< Array of filter coefficients */
-  int n_coef,         /*!< Number of filter coefficients */
-  int blocksize       /*!< Number of samples */
+  float *fir_coefs;   /*!< Array of filter coefficients */
+  int n_coef;         /*!< Number of filter coefficients */
+  int blocksize;       /*!< Number of samples */
 
-} FIR_T
+} FIR_T;
 
 /*!
  * @brief Initializes a FIR_T structure.
@@ -46,7 +51,7 @@ typedef struct your_fir_struct {
  *          fields necessary for FIR filter implementation
  */
 
-FIR_T *init_fir(
+FIR_T * init_fir(
   float *fir_coefs,   /*!< Array of filter coefficients */
   int n_coef,         /*!< Number of filter coefficients */
   int blocksize       /*!< Number of samples */
@@ -73,3 +78,5 @@ void calc_fir(
 void destroy_fir(
   FIR_T *s            /*!< Pointer to a FIR_T struct to be destroyed */
 );
+
+#endif

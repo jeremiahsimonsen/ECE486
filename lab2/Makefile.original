@@ -5,8 +5,8 @@ T2_TARGET = task2
 
 #OBJS  = group02_lab2.o
 BOARD_OBJS = board.o
-T1_OBJS = task1.o ece486_fir.o
-T2_OBJS = task2.o ece486_biquad.o
+T1_OBJS = task1.o
+T2_OBJS = task2.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
@@ -42,44 +42,30 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
 ################################################################
 # Rules
 #all: fir_test $(TARGET) $(TARGET).bin
-all: $(T1_TARGET) $(T2_TARGET) $(BOARD_TARGET) $(BOARD_TARGET).bin
+all: $(BOARD_TARGET) $(BOARD_TARGET).bin $(T1_TARGET) $(T2_TARGET)
+
+#group02_lab2.o:
+#	$(CC) -c lab2_task3.c -o group02_lab2.o
+
+fir_test: test_fir.c ece486_fir.o
+	gcc test_fir.c -o fir_test
 
 ece486_fir.o: ece486_fir.c ece486_fir.h
 	gcc -c ece486_fir.c -o ece486_fir.o
-
-ece486_biquad.o: ece486_biquad.c ece486_biquad.h
-	gcc -c ece486_biquad.c -o ece486_biquad.o
-
-$(T1_TARGET): $(T1_OBJS)
-	gcc -o $(T1_TARGET) $(T1_OBJS)
-
-task1.o: test_fir.c ece486_fir.o
-	gcc -c test_fir.c -o task1.o
-
-$(T2_TARGET): $(T2_OBJS)
-	gcc -o $(T2_TARGET) $(T2_OBJS)
-
-task2.o: test_biquad.c ece486_biquad.o
-	gcc -c test_biquad.c -o task2.o
 
 debug : CFLAGS += -DDEBUG -g -Og
 debug : LDFLAGS += -Wl,-Map,$(TARGET).map
 
 debug : all
 
-$(BOARD_TARGET): $(BOARD_OBJS)
-	$(CC)  -o $(BOARD_TARGET) $(CFLAGS) $(LDFLAGS) $(BOARD_OBJS) $(LIBS)
+$(TARGET): $(OBJS)
+	$(CC)  -o $(TARGET) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LIBS)
 
-$(BOARD_TARGET).bin: $(BOARD_TARGET)
-	$(OBJCOPY) -Obinary $(BOARD_TARGET) $(BOARD_TARGET).bin
+$(TARGET).bin: $(TARGET)
+	$(OBJCOPY) -Obinary $(TARGET) $(TARGET).bin
 
-board.o: board.c ece486_fir.o ece486_iir.o
-	gcc -c board.c -o board.o
-
-flash: $(BOARD_TARGET).bin
-	st-flash write $(BOARD_TARGET).bin 0x08000000
+flash: $(TARGET).bin
+	st-flash write $(TARGET).bin 0x08000000
 
 clean:
-	rm -f $(BOARD_OBJS) $(BOARD_TARGET) $(BOARD_TARGET).bin $(BOARD_TARGET).map;
-	rm -f $(T1_OBJS) $(T1_TARGET);
-	rm -f $(T2_OBJS) $(T2_TARGET);
+	rm -f $(OBJS) $(TARGET) $(TARGET).bin $(TARGET).map *.o 

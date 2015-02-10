@@ -1,0 +1,11 @@
+# Doxygen directories
+html/
+latex/
+
+# Compiled Object files
+*.o
+*.bin
+
+# Executables
+lab2/task1
+lab2/task2
