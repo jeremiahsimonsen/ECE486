@@ -39,12 +39,14 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
   s->fir_coefs = fir_coefs;
   s->n_coefs = n_coefs;
   s->blocksize = blocksize;
-  s->history = (float *) malloc((n_coefs-1)*sizeof(float));
+  s->history = (float *) malloc((n_coefs)*sizeof(float));
 
   int i;
-  for (i = 0; i < n_coefs-1; i++) {
+  for (i = 0; i < n_coefs; i++) {
   	s->history[i] = 0.0;
   }
+
+  s->ind = 0;
 
   return s;
 }
@@ -55,6 +57,7 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
 void calc_fir(FIR_T *s, float *x, float *y){
   int k,n;
   float copy;
+
   for (n = 0; n < s->blocksize; n++) {
   	copy = x[n];
   	y[n] = 0.0;
@@ -62,9 +65,14 @@ void calc_fir(FIR_T *s, float *x, float *y){
   		if (k==n){
   			y[n] += copy * s->fir_coefs[n-k];
   		}
-  		else {
-  			y[n] += (n-k >= 0) ? (x[k] * s->fir_coefs[n-k]) : 0;
+  		else if (n-k > 0 && n-k < s->n_coefs) {
+  			y[n] += x[k] * s->fir_coefs[n-k];
   		}
+  	}
+
+  	if (s->ind < s->n_coefs) {
+  		s->history[s->ind] = copy;		// copy current sample to buffer
+  		s->ind++;
   	}
   }
 }
