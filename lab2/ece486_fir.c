@@ -31,22 +31,33 @@
 #include <stdlib.h>
 
 FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
-  FIR_T * filt;
+  // Allocate memory for an FIR_T structure
+  FIR_T * s;
+  s = (FIR_T *) malloc(sizeof(FIR_T));
 
-  filt = (FIR_T *) malloc(sizeof(FIR_T));
+  // Initialize variables
+  s->fir_coefs = fir_coefs;
+  s->n_coefs = n_coefs;
+  s->blocksize = blocksize;
 
-  // Variable initializations ...
-
-  return filt;
+  return s;
 }
 
+// In order to have this work when x and y point to the same location, the 
+// FIR_T struct will have to store the past 'n_coefs' values of x(n), in a
+// circular buffer. This is really only more efficient when n_coefs < blocksize
 void calc_fir(FIR_T *s, float *x, float *y){
-  
+  int k,n;
+  for (n = 0; n < s->blocksize; n++) {
+  	y[n] = 0.0;
+  	for (k = 0; k < s->n_coefs; k++) {
+  		y[n] += x[k] * s->fir_coefs[n-k];
+  	}
+  }
 }
 
 void destroy_fir(FIR_T *s){
   // free any dynamically allocated elements of s first
-  free(s->fir_coefs);
 
   // Free structure
   free(s);
