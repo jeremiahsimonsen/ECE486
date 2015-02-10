@@ -54,10 +54,17 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
 // circular buffer. This is really only more efficient when n_coefs < blocksize
 void calc_fir(FIR_T *s, float *x, float *y){
   int k,n;
+  float copy;
   for (n = 0; n < s->blocksize; n++) {
+  	copy = x[n];
   	y[n] = 0.0;
   	for (k = 0; k < s->n_coefs; k++) {
-  		y[n] += (n-k >= 0) ? (x[k] * s->fir_coefs[n-k]) : 0;
+  		if (k==n){
+  			y[n] += copy * s->fir_coefs[n-k];
+  		}
+  		else {
+  			y[n] += (n-k >= 0) ? (x[k] * s->fir_coefs[n-k]) : 0;
+  		}
   	}
   }
 }
