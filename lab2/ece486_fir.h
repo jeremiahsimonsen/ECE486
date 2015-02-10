@@ -39,7 +39,7 @@
 typedef struct your_fir_struct {
 
   float *fir_coefs;   /*!< Array of filter coefficients */
-  int n_coef;         /*!< Number of filter coefficients */
+  int n_coefs;         /*!< Number of filter coefficients */
   int blocksize;       /*!< Number of samples */
 
 } FIR_T;

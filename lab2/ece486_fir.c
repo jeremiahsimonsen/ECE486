@@ -51,7 +51,7 @@ void calc_fir(FIR_T *s, float *x, float *y){
   for (n = 0; n < s->blocksize; n++) {
   	y[n] = 0.0;
   	for (k = 0; k < s->n_coefs; k++) {
-  		y[n] += x[k] * s->fir_coefs[n-k];
+  		y[n] += (n-k >= 0) ? (x[k] * s->fir_coefs[n-k]) : 0;
   	}
   }
 }
