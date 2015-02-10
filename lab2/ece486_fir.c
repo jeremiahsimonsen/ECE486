@@ -46,7 +46,8 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
   	s->history[i] = 0.0;
   }
 
-  s->ind = 0;
+  s->samples = 0;
+  s->f_calls = 0;
 
   return s;
 }
@@ -55,26 +56,23 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
 // FIR_T struct will have to store the past 'n_coefs' values of x(n), in a
 // circular buffer. This is really only more efficient when n_coefs < blocksize
 void calc_fir(FIR_T *s, float *x, float *y){
-  int k,n;
-  float copy;
+  int k,n,i;
 
-  for (n = 0; n < s->blocksize; n++) {
-  	copy = x[n];
-  	y[n] = 0.0;
-  	for (k = 0; k < s->n_coefs; k++) {
-  		if (k==n){
-  			y[n] += copy * s->fir_coefs[n-k];
-  		}
-  		else if (n-k > 0 && n-k < s->n_coefs) {
-  			y[n] += x[k] * s->fir_coefs[n-k];
-  		}
+  int start_ind = (s->f_calls*s->blocksize);
+  int end_ind = start_ind + s->blocksize;
+  for (n = start_ind, i=0; n < end_ind; n++, i++) {
+  	if (s->samples <= s->n_coefs) {
+  		s->history[s->samples] = x[i];		// copy current sample to buffer
+  		s->samples++;
   	}
-
-  	if (s->ind < s->n_coefs) {
-  		s->history[s->ind] = copy;		// copy current sample to buffer
-  		s->ind++;
+  	y[i] = 0.0;
+  	for (k = 0; k < s->n_coefs; k++) {
+  		if ((0 <= n-k) && (n-k <= s->n_coefs)) {
+  			y[i] += (s->history[k] * s->fir_coefs[n-k]);
+  		}
   	}
   }
+  s->f_calls++;
 }
 
 void destroy_fir(FIR_T *s){

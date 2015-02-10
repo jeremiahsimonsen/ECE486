@@ -8,6 +8,7 @@ int main(int argc, char *argv[]) {
 	float x1[2] = {1,2};
 	float x2[2] = {3,4};
 	float x3[2] = {5,6};
+
 	float y1[2] = {0,0};
 	float y2[2] = {0,0};
 	float y3[2] = {0,0};
@@ -28,6 +29,11 @@ int main(int argc, char *argv[]) {
 	}
 	for (i = 0; i < 2; i++) {
 		printf("y(%d) = %f\n",i+4,y3[i]);
+	}
+	printf("\n");
+
+	for (i = 0; i < filt->n_coefs; i++) {
+		printf("%f ", filt->history[i]);
 	}
 	printf("\n");
 

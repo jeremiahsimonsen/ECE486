@@ -36,13 +36,14 @@
   * state
   */
 
-typedef struct your_fir_struct {
+typedef struct fir_struct {
 
   float *fir_coefs;   /*!< Array of filter coefficients */
   int n_coefs;        /*!< Number of filter coefficients */
   int blocksize;      /*!< Number of samples */
   float *history;     /*!< Buffer to store last n_coefs samples */
-  int ind;              /*!< Index of history buffer */
+  int samples;        /*!< Number of samples in history buffer */
+  int f_calls;        /*!< Number of times function has been called */
 
 } FIR_T;
 
