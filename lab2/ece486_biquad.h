@@ -1,12 +1,12 @@
 /*!
  * @file
  * 
- * @brief ECE 486 Spring 2015 Lab 2 FIR header file
+ * @brief ECE 486 Spring 2015 Lab 2 IIR header file
  * 
  * @author ECE486 Lab Group 2
  * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
  * 
- * @date Feb 9, 2015
+ * @date Feb 10, 2015
  * 
  * Now describe the details of what's going on with the functions in this
  * file.  This can be several paragraphs long and gives the general
@@ -38,10 +38,10 @@
 
 typedef struct biquad_struct {
 
-  int sections,
-  float g,
-  float **a,
-  float **b,
+  int sections,       
+  float g,            /*!< scale factor */
+  float **a,          /*!< array of 'a' coefficients arrays */
+  float **b,          /*!< array of 'b' coefficients arrays */
   int blocksize       /*!< Number of samples */
 
   int n_coefs;        /*!< Number of filter coefficients */
@@ -51,7 +51,7 @@ typedef struct biquad_struct {
 } BIQUAD_T;
 
 /*!
- * @brief Initializes a FIR_T structure.
+ * @brief Initializes a BIQUAD_T structure.
  *
  * @returns A pointer to a structure of type BIQUAD_T is returned containing the
  *          fields necessary for FIR filter implementation
@@ -66,7 +66,7 @@ BIQUAD_T *init_biquad(
 );
 
 /*!
- * @brief Performs FIR filter calculation on block of samples
+ * @brief Performs IIR filter calculation on block of samples
  *
  * @returns From input sample array @x, the output array @y is calculated using
  *          the FIR filter information in @s.
