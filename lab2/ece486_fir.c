@@ -31,11 +31,13 @@
 #include <stdlib.h>
 
 FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
-  FIR_T * s;
+  FIR_T * filt;
 
-  s = (FIR_T *) malloc(sizeof(FIR_T));
+  filt = (FIR_T *) malloc(sizeof(FIR_T));
 
   // Variable initializations ...
+
+  return filt;
 }
 
 void calc_fir(FIR_T *s, float *x, float *y){
