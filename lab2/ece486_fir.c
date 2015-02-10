@@ -39,6 +39,12 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
   s->fir_coefs = fir_coefs;
   s->n_coefs = n_coefs;
   s->blocksize = blocksize;
+  s->history = (float *) malloc((n_coefs-1)*sizeof(float));
+
+  int i;
+  for (i = 0; i < n_coefs-1; i++) {
+  	s->history[i] = 0.0;
+  }
 
   return s;
 }
