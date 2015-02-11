@@ -77,7 +77,7 @@ void calc_fir(FIR_T *s, float *x, float *y){
 
 void destroy_fir(FIR_T *s){
   // free any dynamically allocated elements of s first
-
+	free(s->history);
   // Free structure
   free(s);
 }
