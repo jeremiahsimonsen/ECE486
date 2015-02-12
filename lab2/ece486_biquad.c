@@ -60,11 +60,21 @@ BIQUAD_T * init_biquad(int sections, float g, float **a, float **b, int blocksiz
  * @brief Performs IIR filter calculation on block of samples
  *
  * @returns From input sample array @x, the output array @y is calculated using
- *          the FIR filter information in @s.
+ *          the IIR filter information in @s.
  */
 
 void calc_biquad(BIQUAD_T *s, float *x, float *y) {
-  
+  // figure out n
+  int i;
+  float * stage = (float *) malloc((s->sections) * sizeof(float))
+  for(i = 0; i < s->sections; i++) {
+    int numerator = (s->b[i + 1][0] * x[n]) + (s->b[i + 1][1] * x[n - 1]) + (s->b[i + 1][2] * x[n - 2]);
+    int denominator = (s->a[i + 1][0] * x[n]) + (s->a[i + 1][1] * x[n - 1]) + (s->a[i + 1][2] * x[n - 2]);
+
+    stage[i] = (numerator / denominator);
+
+  }
+  // g times all stage elements will be H(z)
 }
 
 /*!
