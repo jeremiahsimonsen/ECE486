@@ -14,7 +14,10 @@ int main(int argc, char *argv[]) {
 	float b[2][3] = {{2.2044, 0.0, 2.2044},
 					 {2.9658, -3.4865, 2.9658}};
 
-	f = init_biquad(2,0.01718740,a,b,20);
+	int sections = 2;
+	float g = 0.01718740;
+	int blocksize = 20;
+	f = init_biquad(sections,g,a,b,blocksize);
 	calc_biquad(f, x, y);
 
 	int i;

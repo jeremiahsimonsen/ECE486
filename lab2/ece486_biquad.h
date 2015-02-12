@@ -40,13 +40,13 @@ typedef struct biquad_struct {
 
   int sections;       
   float g;            /*!< scale factor */
-  float *a[3];          /*!< array of 'a' coefficients arrays */
-  float *b[3];          /*!< array of 'b' coefficients arrays */
-  int blocksize;      /*!< Number of samples */
+  int bSize;          /*!< Number of samples */
+  int v_ind;          /*!< Index of v buffer */
 
   float v_buff[3];    /*!< Buffer to store last n_coefs samples */
+  float *a[3];          /*!< array of 'a' coefficients arrays */
+  float *b[3];          /*!< array of 'b' coefficients arrays */
   float *in_buff;     /*!< Buffer to store blocksize inputs/outputs */
-  int v_ind;          /*!< Index of v buffer */
 
 } BIQUAD_T;
 
@@ -60,8 +60,8 @@ typedef struct biquad_struct {
 BIQUAD_T *init_biquad(
   int sections,
   float g,
-  float *a[3],
-  float *b[3],
+  float a[][3],
+  float b[][3],
   int blocksize      /*!< Number of samples */
 );
 

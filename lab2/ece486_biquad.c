@@ -31,6 +31,7 @@
 #include <stdlib.h>
 
 
+#define DEBUG 1
 
 /*!
  * @brief Initializes a BIQUAD_T structure.
@@ -38,32 +39,39 @@
  * @returns A pointer to a structure of type BIQUAD_T is returned containing the
  *          fields necessary for FIR filter implementation
  */
-
-BIQUAD_T * init_biquad(int sections, float g, float *a[3], float *b[3], int blocksize) {
+BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int blocksize) {
   // Allocate memory for BIQUAD_T structure
   BIQUAD_T *s;
-  s = (BIQUAD_T *) malloc(sizeof(BIQUAD_T));
+  s = malloc(sizeof(BIQUAD_T));
+  if (s == NULL) return NULL;
 
   // intialize variables
   s->sections = sections;
   s->g = g;
-  s->blocksize = blocksize;
-  s->a = (float **) malloc(sizeof(float) * 3);
-  s->b = (float **) malloc(sizeof(float) * 3);
+  s->bSize = blocksize;
+  s->v_ind = 0;
+
+  // s->a = (float *[3]) malloc(sizeof(float) * 3);
+  // s->b = malloc(sizeof(float) * 3);
 
   int i;
   for (i = 0; i < blocksize; i++) {
     s->a[i] = (float *) malloc(sizeof(float) * 3);
+    if (s->a[i] == NULL) return NULL;
+  }
+  for (i = 0; i < blocksize; i++) {
     s->b[i] = (float *) malloc(sizeof(float) * 3);
-  }  
+    if (s->b[i] == NULL) return NULL;
+  }
 
   s->in_buff = (float *) malloc(blocksize*sizeof(float));
+  if (s->in_buff == NULL) return NULL;
   for (i=0; i<blocksize; i++) {
     s->in_buff[i] = 0.0;
   }
 
-  s->v_ind = 0;
 
+  DEBUG && printf("Biquad initialized\n");
   return s;
 }
 
@@ -75,11 +83,12 @@ BIQUAD_T * init_biquad(int sections, float g, float *a[3], float *b[3], int bloc
  */
 
 void calc_biquad(BIQUAD_T *s, float *x, float *y) {
-  // figure out n
+  DEBUG && printf("Entering calc_biquad()\n");
   int bq,n;
   float * stage = (float *) malloc((s->sections) * sizeof(float));
   for(bq = 0; bq < s->sections; bq++) {
-    for(n = 0; n < s->blocksize; n++) {
+    for(n = 0; n < s->bSize; n++) {
+      DEBUG && printf("n = %d\n",n);
       int z1 = s->v_ind - 1;
       z1 = (z1 >= 0) ? z1 : z1 + 3;
       int z2 = s->v_ind - 2;
@@ -105,7 +114,7 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
 
 
   }
-  // g times all stage elements will be H(z)
+  DEBUG && printf("Exiting calc_biquad()\n");
 }
 
 /*!
@@ -115,7 +124,7 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
 
 void destroy_biquad(BIQUAD_T *s) {
   int i;
-  for (i = 0; i < s->blocksize; i++) {
+  for (i = 0; i < s->bSize; i++) {
     free(s->a[i]);
     free(s->b[i]);
   }
