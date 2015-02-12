@@ -131,7 +131,6 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
       int z2 = s->v_ind - 2;
       z2 = (z2 >= 0) ? z2 : z2 + 3;
 
-      DEBUG_CALC && printf("v_buff[v_ind] before = %f\n", s->v_buff[s->v_ind]);
 
       if (bq == 0) {
         DEBUG_CALC && printf("x[n] = %f\n", x[n]);
@@ -140,7 +139,6 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
         s->v_buff[s->v_ind] = s->a[bq][0]*s->in_buff[n] - s->a[bq][1]*s->v_buff[z1] - s->a[bq][2]*s->v_buff[z2];
       }
 
-      DEBUG_CALC && printf("v_buff[v_ind] after = %f\n", s->v_buff[s->v_ind]);
 
       if (bq == s->sections-1) {
         y[n] = s->g * (s->b[bq][0]*s->v_buff[s->v_ind] + s->b[bq][1]*s->v_buff[z1] + s->b[bq][2]*s->v_buff[z2]);

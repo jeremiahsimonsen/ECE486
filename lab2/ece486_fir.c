@@ -8,21 +8,25 @@
  * 
  * @date Feb 9, 2015
  * 
- * Now describe the details of what's going on with the functions in this
- * file.  This can be several paragraphs long and gives the general
- * overview of what's going on.  Virtually every file (.h or .c or 
- * other source code) should include a comment block to describe 
- * its purpose or give an overview of the use of the code. 
- * 
- * Paragraphs are indicated by a blank line in the comment block
- * (except for the optional "*" character at the start of the line).
- * 
- * @verbatim
- *   If doxygen formatting starts to drive you nuts, you can use the 
- *   verbatim construct to avoid all the re-structuring.
- *       1) Who knows if it will help?
- *       2) Note that here are better ways to format lists within doxygen
- * @endverbatim
+ * This file contains the subroutine definitions necessary for performing the
+ * FIR filter calculations on a block of samples.
+ *
+ * The init_fir() function initializes an FIR_T variable, allocating memory for
+ * all fields. The function takes an array of impulse response coefficients in 
+ * the form of 'float *fir_coefs'. The argument 'n_coefs' denotes the number of
+ * non-zero terms in the impulse response. Samples will be processed in chunks 
+ * 'blocksize' samples. 'history' is a circular buffer for storing the previous
+ * n_coefs samples for performing the convolution. 'histInd' keeps track of the
+ * current index in the history  buffer. The function returns a pointer to an 
+ * FIR_T structure.
+ *
+ * The calc_fir() function performs the FIR filtering on 'blocksize' samples of
+ * input 'x', storing the corresponding outputs in 'y'. The information needed
+ * to perform the calculation is passed to the function with the FIR_T struct
+ * 's'.
+ *
+ * The destroy_fir() function de-allocates all memory pointed to by FIR_T *'s' 
+ * allocated by init_fir().
  * 
  */
 
@@ -51,27 +55,33 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
   return s;
 }
 
+// This code DOES function when x and y point to the same location.
 // In order to have this work when x and y point to the same location, the 
 // FIR_T struct will have to store the past 'n_coefs' values of x(n), in a
 // circular buffer. This is really only more efficient when n_coefs < blocksize
 void calc_fir(FIR_T *s, float *x, float *y){
-  int k,n;
+  int k,n;  // Indices corresponding to the convolution sum
 
+  // For all samples in the block
   for (n = 0;n < s->blocksize; n++) {
-  	s->history[s->histInd] = x[n];
-  	y[n] = 0.0;
-  	for (k = 0; k < s->n_coefs; k++) {
-  			int index = s->histInd - k;
+  	s->history[s->histInd] = x[n];     // Copy x[n] to history buffer
+  	y[n] = 0.0;                        // zero the output
+  	// For all terms in the convolution sum
+    for (k = 0; k < s->n_coefs; k++) {
+  			int index = s->histInd - k;    // calculate n-k
+        // Handle looping off the end of the array
         index = index>=0 ? index : index+s->n_coefs;
-        y[n] += (s->fir_coefs[k] * s->history[index]);
+        y[n] += (s->fir_coefs[k] * s->history[index]);  // calculate output
   	}
-    s->histInd++;
+    s->histInd++;                      // move index of history buffer
+    // Handle looping off the end of the array
     if(s->histInd == (s->n_coefs)) {
       s->histInd = 0;
     }
   }
 }
 
+// De-allocate memory for all dynamically allocated variables
 void destroy_fir(FIR_T *s){
   // free any dynamically allocated elements of s first
 	free(s->history);

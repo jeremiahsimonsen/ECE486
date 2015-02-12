@@ -15,23 +15,23 @@ int main(int argc, char *argv[]) {
 	// 		y(5) = 40.000000
 	//////////////////////////////////////////////////////////////////////
 
-	FIR_T *filt;
-	float h0[4] = {1,2,3,4};
-	float x1[2] = {1,2};
+	FIR_T *filt;											// declare a filter
+	float h0[4] = {1,2,3,4};					// impulse response
+	float x1[2] = {1,2};							// inputs
 	float x2[2] = {3,4};
 	float x3[2] = {5,6};
 
-	float y1[2] = {0,0};
+	float y1[2] = {0,0};							// outputs
 	float y2[2] = {0,0};
 	float y3[2] = {0,0};
 	// float *y = x;
 
-	filt = init_fir(h0,4,2);
-	calc_fir(filt,x1,y1);
+	filt = init_fir(h0,4,2);					// initialize the filter
+	calc_fir(filt,x1,y1);							// calculate filter outputs
 	calc_fir(filt,x2,y2);
 	calc_fir(filt,x3,y3);
 
-
+	// Display values
 	int i;
 	for (i = 0; i < 2; i++) {
 		printf("y(%d) = %f\n",i,y1[i]);
@@ -70,15 +70,16 @@ int main(int argc, char *argv[]) {
 	// 		y(18) = 190.000000
 	// 		y(19) = 210.000000
 	//////////////////////////////////////////////////////////////////////
-	FIR_T *f;
+	FIR_T *f;		// Declare filter
 
-	float h[20] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-	float x[20] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
-	float *y = x;
+	float h[20] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};	// impulse response
+	float x[20] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};	// input
+	float *y = x;			// output
 
-	f = init_fir(h,20,20);
-	calc_fir(f,x,y);
+	f = init_fir(h,20,20);	// initialize the filter
+	calc_fir(f,x,y);				// calculate outputs
 
+	// Display values
 	for (i=0; i<20; i++) {
 		printf("y(%d) = %f\n", i, y[i]);
 	}
@@ -89,16 +90,22 @@ int main(int argc, char *argv[]) {
 	/////////////////////////////////////////////////////////////////////
 	// Test with 2 filter coefficients, where n_coefs < blocksize			 //
 	// Should match (as verified using MATLAB):
+	// 		y(0) = 1.000000
+	//  	y(1) = 4.000000
+	//  	y(2) = 7.000000
+	//  	y(3) = 10.000000
+	/////////////////////////////////////////////////////////////////////
 
-	FIR_T *f2;
+	FIR_T *f2;		// Declare filter
 
-	float h2[2] = {1,2};
-	float x4[4] = {1,2,3,4};
-	float *y4 = x4;
+	float h2[2] = {1,2};			// impulse response
+	float x4[4] = {1,2,3,4};	// input
+	float *y4 = x4;						// output
 
-	f2 = init_fir(h2, 2, 4);
-	calc_fir(f2,x4,y4);
+	f2 = init_fir(h2, 2, 4);	// initialize the filter
+	calc_fir(f2,x4,y4);				// calculate filter outputs
 
+	// Display values
 	for(i=0; i<4; i++) {
 		printf("y(%d) = %f\n", i, y4[i]);
 	}
