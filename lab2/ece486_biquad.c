@@ -52,6 +52,15 @@ BIQUAD_T * init_biquad(int sections, float g, float **a, float **b, int blocksiz
   s->g = g;
   s->a = a[sections][3];
   s->b = b[sections][3];
+  s->blocksize = blocksize;
+
+  s->in_buff = (float *) malloc(blocksize*sizeof(float));
+  int i;
+  for (i=0; i<blocksize; i++) {
+    in_buff[i] = 0.0;
+  }
+
+  s->v_ind = 0;
 
   return s;
 }
@@ -65,13 +74,33 @@ BIQUAD_T * init_biquad(int sections, float g, float **a, float **b, int blocksiz
 
 void calc_biquad(BIQUAD_T *s, float *x, float *y) {
   // figure out n
-  int i;
+  int bq,n;
   float * stage = (float *) malloc((s->sections) * sizeof(float))
-  for(i = 0; i < s->sections; i++) {
-    int numerator = (s->b[i + 1][0] * x[n]) + (s->b[i + 1][1] * x[n - 1]) + (s->b[i + 1][2] * x[n - 2]);
-    int denominator = (s->a[i + 1][0] * x[n]) + (s->a[i + 1][1] * x[n - 1]) + (s->a[i + 1][2] * x[n - 2]);
+  for(bq = 0; bq < s->sections; bq++) {
+    for(n = 0; n < s->blocksize; n++) {
+      int z1 = s->v_ind - 1;
+      z1 = (z1 >= 0) ? z1 : z1 + 3;
+      int z2 = s->v_ind - 2;
+      z2 = (z2 >= 0) ? z2 : z2 + 3;
 
-    stage[i] = (numerator / denominator);
+      if (bq == 0) {
+        v[s->v_ind] = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[z1] - a[bq][2]*s->v_buff[z2];
+      } else {
+        v[s->v_ind] = s->a[bq][0]*in_buff[n] - s->a[bq][1]*s->v_buff[z1] - a[bq][2]*s->v_buff[z2];
+      }
+
+      if (bq == sections-1) {
+        y[n] = s->g * (b[bq][0]*v_buff[s->v_ind] + b[bq][1]*v_buff[z1] + b[bq][2]*v_buff[z2]);
+      } else {
+        in_buff[n] = b[bq][0]*v_buff[s->v_ind] + b[bq][1]*v_buff[z1] + b[bq][2]*v_buff[z2];
+      }
+
+      s->v_ind++;
+      if (s->v_ind == 3) {
+        s->v_ind = 0;
+      }
+    }
+
 
   }
   // g times all stage elements will be H(z)

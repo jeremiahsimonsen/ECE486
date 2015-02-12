@@ -44,8 +44,9 @@ typedef struct biquad_struct {
   float **b,          /*!< array of 'b' coefficients arrays */
   int blocksize       /*!< Number of samples */
 
-  float *history;     /*!< Buffer to store last n_coefs samples */
-  int ind;            /*!< Index of history buffer */
+  float v_buff[3];     /*!< Buffer to store last n_coefs samples */
+  float *in_buff;     /*!< Buffer to store blocksize inputs/outputs */
+  int v_ind;            /*!< Index of v buffer */
 
 } BIQUAD_T;
 
