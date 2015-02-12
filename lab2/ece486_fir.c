@@ -46,7 +46,7 @@ FIR_T * init_fir(float *fir_coefs, int n_coefs, int blocksize){
   	s->history[i] = 0.0;
   }
 
-  s->samples = 0;
+  s->histInd = 0;
   s->f_calls = 0;
 
   return s;
@@ -61,16 +61,23 @@ void calc_fir(FIR_T *s, float *x, float *y){
   int start_ind = (s->f_calls*s->blocksize);
   int end_ind = start_ind + s->blocksize;
   for (n = start_ind, i=0; n < end_ind; n++, i++) {
-  	if (s->samples <= s->n_coefs) {
-  		s->history[s->samples] = x[i];		// copy current sample to buffer
-  		s->samples++;
-  	}
+  	s->history[s->histInd] = x[i];
+    // s->histInd++;
   	y[i] = 0.0;
+    // printf("n = %d, i = %d, histInd = %d\n",n,i,s->histInd);
   	for (k = 0; k < s->n_coefs; k++) {
-  		if ((0 <= n-k) && (n-k <= s->n_coefs)) {
-  			y[i] += (s->history[k] * s->fir_coefs[n-k]);
-  		}
+  		// if ((0 <= n-k) && (n-k <= s->n_coefs)) {
+  			int index = s->histInd - k;
+        index = index>=0 ? index : index+s->n_coefs;
+        y[i] += (s->fir_coefs[k] * s->history[index]);
+        // printf("index = %d, history[index] = %f, k = %d, fir_coefs[k] = %f\n", index,s->history[index],k,s->fir_coefs[k]);
+  		// }
   	}
+    s->histInd++;
+    if(s->histInd == (s->n_coefs)) {
+      s->histInd = 0;
+    }
+    // printf("histInd = %d\n",s->histInd);
   }
   s->f_calls++;
 }

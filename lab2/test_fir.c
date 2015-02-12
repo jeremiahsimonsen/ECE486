@@ -44,11 +44,6 @@ int main(int argc, char *argv[]) {
 	}
 	printf("\n");
 
-	for (i = 0; i < filt->n_coefs; i++) {
-		printf("%f ", filt->history[i]);
-	}
-	printf("\n");
-
 	destroy_fir(filt);
 
 	//////////////////////////////////////////////////////////////////////
@@ -108,6 +103,8 @@ int main(int argc, char *argv[]) {
 		printf("y(%d) = %f\n", i, y4[i]);
 	}
 	printf("\n");
+
+	destroy_fir(f2);
 
   return 0;
 }

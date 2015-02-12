@@ -42,7 +42,7 @@ typedef struct fir_struct {
   int n_coefs;        /*!< Number of filter coefficients */
   int blocksize;      /*!< Number of samples */
   float *history;     /*!< Buffer to store last n_coefs samples */
-  int samples;        /*!< Number of samples in history buffer */
+  int histInd;        /*!< Index of current sample in history */
   int f_calls;        /*!< Number of times function has been called */
 
 } FIR_T;
