@@ -54,18 +54,29 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   // s->a = (float *[3]) malloc(sizeof(float) * 3);
   // s->b = malloc(sizeof(float) * 3);
 
+  ///////////////////////
+  // Memory allocation //
+  ///////////////////////
   int i;
   for (i = 0; i < blocksize; i++) {
     s->a[i] = (float *) malloc(sizeof(float) * 3);
     if (s->a[i] == NULL) return NULL;
+    s->a[i] = a[i];
   }
   for (i = 0; i < blocksize; i++) {
     s->b[i] = (float *) malloc(sizeof(float) * 3);
     if (s->b[i] == NULL) return NULL;
+    s->b[i] = b[i];
   }
 
   s->in_buff = (float *) malloc(blocksize*sizeof(float));
   if (s->in_buff == NULL) return NULL;
+
+  ///////////////////////////////////////////////////////
+  // Initialization of dynamically allocated variables //
+  ///////////////////////////////////////////////////////
+  // s->a = a;
+  // s->b = b;
   for (i=0; i<blocksize; i++) {
     s->in_buff[i] = 0.0;
   }
@@ -87,6 +98,7 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
   int bq,n;
   float * stage = (float *) malloc((s->sections) * sizeof(float));
   for(bq = 0; bq < s->sections; bq++) {
+    DEBUG && printf("bq = %d\n", bq);
     for(n = 0; n < s->bSize; n++) {
       DEBUG && printf("n = %d\n",n);
       int z1 = s->v_ind - 1;
@@ -94,11 +106,16 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
       int z2 = s->v_ind - 2;
       z2 = (z2 >= 0) ? z2 : z2 + 3;
 
+      DEBUG && printf("v_buff[v_ind] before = %f\n", s->v_buff[s->v_ind]);
+
       if (bq == 0) {
+        DEBUG && printf("x[n] = %f\n", x[n]);
         s->v_buff[s->v_ind] = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[z1] - s->a[bq][2]*s->v_buff[z2];
       } else {
         s->v_buff[s->v_ind] = s->a[bq][0]*s->in_buff[n] - s->a[bq][1]*s->v_buff[z1] - s->a[bq][2]*s->v_buff[z2];
       }
+
+      DEBUG && printf("v_buff[v_ind] after = %f\n", s->v_buff[s->v_ind]);
 
       if (bq == s->sections-1) {
         y[n] = s->g * (s->b[bq][0]*s->v_buff[s->v_ind] + s->b[bq][1]*s->v_buff[z1] + s->b[bq][2]*s->v_buff[z2]);
