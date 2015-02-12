@@ -26,9 +26,6 @@
  * 
  */
 
-#ifndef ECE486_FIR_H
-#define ECE486_FIR_H
-
 #include "ece486_biquad.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +39,7 @@
  *          fields necessary for FIR filter implementation
  */
 
-BIQUAD_T * init_biquad(int sections, float g, float **a, float **b, int blocksize) {
+BIQUAD_T * init_biquad(int sections, float g, float *a[3], float *b[3], int blocksize) {
   // Allocate memory for BIQUAD_T structure
   BIQUAD_T *s;
   s = (BIQUAD_T *) malloc(sizeof(BIQUAD_T));
@@ -50,14 +47,19 @@ BIQUAD_T * init_biquad(int sections, float g, float **a, float **b, int blocksiz
   // intialize variables
   s->sections = sections;
   s->g = g;
-  s->a = a[sections][3];
-  s->b = b[sections][3];
   s->blocksize = blocksize;
+  s->a = (float **) malloc(sizeof(float) * 3);
+  s->b = (float **) malloc(sizeof(float) * 3);
+
+  int i;
+  for (i = 0; i < blocksize; i++) {
+    s->a[i] = (float *) malloc(sizeof(float) * 3);
+    s->b[i] = (float *) malloc(sizeof(float) * 3);
+  }  
 
   s->in_buff = (float *) malloc(blocksize*sizeof(float));
-  int i;
   for (i=0; i<blocksize; i++) {
-    in_buff[i] = 0.0;
+    s->in_buff[i] = 0.0;
   }
 
   s->v_ind = 0;
@@ -75,7 +77,7 @@ BIQUAD_T * init_biquad(int sections, float g, float **a, float **b, int blocksiz
 void calc_biquad(BIQUAD_T *s, float *x, float *y) {
   // figure out n
   int bq,n;
-  float * stage = (float *) malloc((s->sections) * sizeof(float))
+  float * stage = (float *) malloc((s->sections) * sizeof(float));
   for(bq = 0; bq < s->sections; bq++) {
     for(n = 0; n < s->blocksize; n++) {
       int z1 = s->v_ind - 1;
@@ -84,15 +86,15 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
       z2 = (z2 >= 0) ? z2 : z2 + 3;
 
       if (bq == 0) {
-        v[s->v_ind] = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[z1] - a[bq][2]*s->v_buff[z2];
+        s->v_buff[s->v_ind] = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[z1] - s->a[bq][2]*s->v_buff[z2];
       } else {
-        v[s->v_ind] = s->a[bq][0]*in_buff[n] - s->a[bq][1]*s->v_buff[z1] - a[bq][2]*s->v_buff[z2];
+        s->v_buff[s->v_ind] = s->a[bq][0]*s->in_buff[n] - s->a[bq][1]*s->v_buff[z1] - s->a[bq][2]*s->v_buff[z2];
       }
 
-      if (bq == sections-1) {
-        y[n] = s->g * (b[bq][0]*v_buff[s->v_ind] + b[bq][1]*v_buff[z1] + b[bq][2]*v_buff[z2]);
+      if (bq == s->sections-1) {
+        y[n] = s->g * (s->b[bq][0]*s->v_buff[s->v_ind] + s->b[bq][1]*s->v_buff[z1] + s->b[bq][2]*s->v_buff[z2]);
       } else {
-        in_buff[n] = b[bq][0]*v_buff[s->v_ind] + b[bq][1]*v_buff[z1] + b[bq][2]*v_buff[z2];
+        s->in_buff[n] = s->b[bq][0]*s->v_buff[s->v_ind] + s->b[bq][1]*s->v_buff[z1] + s->b[bq][2]*s->v_buff[z2];
       }
 
       s->v_ind++;
@@ -111,8 +113,13 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
  *
  */
 
-void destroy_biquad(
-  BIQUAD_T *s            /*!< Pointer to a BIQUAD_T struct to be destroyed */
-);
-
-#endif
+void destroy_biquad(BIQUAD_T *s) {
+  int i;
+  for (i = 0; i < s->blocksize; i++) {
+    free(s->a[i]);
+    free(s->b[i]);
+  }
+  free(s->a);
+  free(s->b);
+  free(s);
+}

@@ -26,8 +26,8 @@
  * 
  */
 
-#ifndef ECE486_FIR_H
-#define ECE486_FIR_H
+#ifndef ECE486_BIQUAD_H
+#define ECE486_BIQUAD_H
 
 #include <stdint.h>
 
@@ -38,15 +38,15 @@
 
 typedef struct biquad_struct {
 
-  int sections,       
-  float g,            /*!< scale factor */
-  float **a,          /*!< array of 'a' coefficients arrays */
-  float **b,          /*!< array of 'b' coefficients arrays */
-  int blocksize       /*!< Number of samples */
+  int sections;       
+  float g;            /*!< scale factor */
+  float *a[3];          /*!< array of 'a' coefficients arrays */
+  float *b[3];          /*!< array of 'b' coefficients arrays */
+  int blocksize;      /*!< Number of samples */
 
-  float v_buff[3];     /*!< Buffer to store last n_coefs samples */
+  float v_buff[3];    /*!< Buffer to store last n_coefs samples */
   float *in_buff;     /*!< Buffer to store blocksize inputs/outputs */
-  int v_ind;            /*!< Index of v buffer */
+  int v_ind;          /*!< Index of v buffer */
 
 } BIQUAD_T;
 
@@ -60,8 +60,8 @@ typedef struct biquad_struct {
 BIQUAD_T *init_biquad(
   int sections,
   float g,
-  float **a,
-  float **b,
+  float *a[3],
+  float *b[3],
   int blocksize      /*!< Number of samples */
 );
 
