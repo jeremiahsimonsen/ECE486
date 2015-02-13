@@ -1,3 +1,17 @@
+/*!
+ * @file
+ * 
+ * @brief ECE 486 Spring 2015 Lab 2 FIR test
+ * 
+ * @author ECE486 Lab Group 2
+ * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
+ * 
+ * @date Feb 13, 2015
+ * 
+ * This file tests the FIR subroutines
+ * 
+ */
+
 #include "ece486_fir.h"
 #include <stdlib.h>
 #include <stdio.h>

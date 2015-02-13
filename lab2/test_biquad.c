@@ -1,3 +1,17 @@
+/*!
+ * @file
+ * 
+ * @brief ECE 486 Spring 2015 Lab 2 Biquad/IIR test
+ * 
+ * @author ECE486 Lab Group 2
+ * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
+ * 
+ * @date Feb 13, 2015
+ * 
+ * This file tests the BIQUAD subroutines
+ * 
+ */
+
 #include "ece486_biquad.h"
 #include <stdio.h>
 #include <stdlib.h>

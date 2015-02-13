@@ -1,9 +1,25 @@
-/*
- * Example program to illustrate the use of the ECE 486 interface.
+/*!
+ * @file
  * 
- * An input waveform is squared, and streamed to the output DAC.  The 
- * waveform is also copied (unchanged) to the other DAC channel.  Each
- * USER button press inverts the signal on the second DAC.
+ * @brief ECE 486 Spring 2015 Lab 2 Real-time implementation
+ * 
+ * @author ECE486 Lab Group 2
+ * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
+ * 
+ * @date Feb 13, 2015
+ * 
+ * This file contains the real-time implementation of the FIR and IIR filter
+ * subroutines on the STM32F407xx dev board.
+ *
+ * An input is taken on pin AIN1, the FIR filtered output is sent to pin
+ * AOUT1, and the IIR (BIQUAD) filtered output is sent to pin AOUT2
+ *
+ * The IIR filter demonstrated is the 4th order IIR filter from HW2. The 
+ * sampling rate is 48ksps so it will reject 7.2 kHz and 12 kHz.
+ *
+ * The FIR filter demonstrated is a 20 coefficient lowpass filter with a 3db
+ * cutoff frequency of 5 kHz.
+ * 
  */
 
 #include "stm32f4xx_hal.h"
@@ -27,13 +43,13 @@
 
 int main(void)
 {
-  int nsamp, i;
+  int nsamp,i;
   float *input, *output1, *output2;
   static float sign=1.0;
   static int button_count = 0;
   char outstr[100];
 
-  initialize(FS_50K, MONO_IN, STEREO_OUT); 	// Set up the DAC/ADC interface
+  initialize(FS_48K, MONO_IN, STEREO_OUT); 	// Set up the DAC/ADC interface
   
   /*
    * Allocate Required Memory
@@ -55,8 +71,32 @@ int main(void)
   float b[2][3] = {{2.2044, 0.0, 2.2044},
            {2.9658, -3.4865, 2.9658}};
 
-  BIQUAD_T *f;
-  f = init_biquad(2, 0.01718740, a, b, nsamp);
+  float h[20] = {0.000168, 
+                  -0.000883, 
+                  -0.004735, 
+                  -0.010728, 
+                  -0.013639, 
+                  -0.004205, 
+                  0.025992, 
+                  0.077462, 
+                  0.138625, 
+                  0.188861, 
+                  0.208333, 
+                  0.188861, 
+                  0.138625, 
+                  0.077462, 
+                  0.025992, 
+                  -0.004205, 
+                  -0.013639, 
+                  -0.010728, 
+                  -0.004735, 
+                  -0.000883};
+
+  FIR_T * f1;
+  f1 = init_fir(h,20,nsamp);
+
+  BIQUAD_T *f2;
+  f2 = init_biquad(2, 0.01718740, a, b, nsamp);
 
   /*
    * Infinite Loop to process the data stream, "nsamp" samples at a time
@@ -77,11 +117,11 @@ int main(void)
      */
     
     DIGITAL_IO_SET(); 	// Use a scope on PC4 to measure execution time
-    for(i=0;i<nsamp;i++) {
-      output1[i] = input[i];
-    }  
-
-    calc_biquad(f,input,output2);
+    // for(i=0;i<nsamp;i++) {
+    //   output2[i] = input[i];
+    // }  
+    calc_fir(f1,input,output1);
+    calc_biquad(f2,input,output2);
     
     DIGITAL_IO_RESET();	// (falling edge....  done processing data )
     
