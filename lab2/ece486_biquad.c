@@ -18,7 +18,7 @@
  * Two 2-dimensional arrays are passed as the 'a' coefficients and 'b' coefficients.
  * An integer 'blocksize' indicates the number of samples in each block of 
  * data to be processed. 
- * A 2-dimenstional array 'v_buff' that keeps the 2 previous v(n) samples is 
+ * A 2-dimensional array 'v_buff' that keeps the 2 previous v(n) samples is 
  * initialized to 0.
  * The function returns a pointer to a BIQUAD_T structure.
  *
@@ -99,7 +99,7 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
   int bq, n;
   float v_tmp;
 
-  // build each biquad filter section
+  // Run samples through each biquad filter section
   for(bq = 0; bq < s->sections; bq++) {
     // find corresponding output for each input n for blocksize samples
     for(n = 0; n < s->bSize; n++) {
