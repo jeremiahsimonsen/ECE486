@@ -8,21 +8,30 @@
  * 
  * @date Feb 10, 2015
  * 
- * Now describe the details of what's going on with the functions in this
- * file.  This can be several paragraphs long and gives the general
- * overview of what's going on.  Virtually every file (.h or .c or 
- * other source code) should include a comment block to describe 
- * its purpose or give an overview of the use of the code. 
+ * This file contains subroutine and data-type declarations necessary for 
+ * running the biquad filter transfer function calculations, which filters 
+ * the input data in Direct Form II.
  * 
- * Paragraphs are indicated by a blank line in the comment block
- * (except for the optional "*" character at the start of the line).
+ * The BIQUAD_T data-type is a struct containing the necessary fields for
+ * calculating the transfer function.
+ *
+ * The init_biquad() function initializes an BIQUAD_T variable, allocating
+ * memory for all fields. The function takes an integer 'sections' which is 
+ * the number of biquad filter sections to be used for calculating H(z).
+ * The float 'g' is passed as the gain to be multiplied by every biquad section.
+ * Two 2-dimensional arrays are passed as the 'a' coefficients and 'b' coefficients.
+ * An integer 'blocksize' indicates the number of samples in each block of 
+ * data to be processed.
+ * The function returns a pointer to an BIQUAD_T.
+ *
+ * The calc_biquad() function performs the transfer function calculation on
+ * a block of samples. It takes a pointer to a float 'x' - the block of samples -
+ * and a pointer to an BIQUAD_T 's' - the struct containing the fields 
+ * necessary for the calculations. The function returns a pointer to an array
+ * of floats, which contains the output transfer function calculations.
  * 
- * @verbatim
- *   If doxygen formatting starts to drive you nuts, you can use the 
- *   verbatim construct to avoid all the re-structuring.
- *       1) Who knows if it will help?
- *       2) Note that here are better ways to format lists within doxygen
- * @endverbatim
+ * The destroy_biquad() function de-allocates all memory allocated by init_biquad()
+ * and calc_biquad(). 
  * 
  */
 
@@ -38,10 +47,10 @@
 
 typedef struct biquad_struct {
 
-  int sections;       
-  float g;            /*!< scale factor */
-  int bSize;          /*!< Number of samples */
-  float *v_buff[2];    /*!< Buffer to store last n_coefs samples */
+  int sections;         /*!< Number of biquad filter sections to be implemented */
+  float g;              /*!< scale factor */
+  int bSize;            /*!< Number of samples */
+  float *v_buff[2];     /*!< Buffer to store last n_coefs samples */
   float *a[3];          /*!< array of 'a' coefficients arrays */
   float *b[3];          /*!< array of 'b' coefficients arrays */
 
@@ -51,14 +60,14 @@ typedef struct biquad_struct {
  * @brief Initializes a BIQUAD_T structure.
  *
  * @returns A pointer to a structure of type BIQUAD_T is returned containing the
- *          fields necessary for FIR filter implementation
+ *          fields necessary for IIR filter implementation
  */
 
 BIQUAD_T *init_biquad(
-  int sections,
-  float g,
-  float a[][3],
-  float b[][3],
+  int sections,      /*!< Number of biquad filter sections to be implemented */
+  float g,           /*!< Gain to be mulitplied by each filter section */
+  float a[][3],      /*!< Array of 'a' coefficients */
+  float b[][3],      /*!< Array of 'b' coefficients */
   int blocksize      /*!< Number of samples */
 );
 
@@ -66,7 +75,7 @@ BIQUAD_T *init_biquad(
  * @brief Performs IIR filter calculation on block of samples
  *
  * @returns From input sample array @x, the output array @y is calculated using
- *          the FIR filter information in @s.
+ *          the IIR filter information in @s.
  */
 
 void calc_biquad(
