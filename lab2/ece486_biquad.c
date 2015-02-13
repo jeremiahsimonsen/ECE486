@@ -30,17 +30,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #define DEBUG_INIT 0
-#define DEBUG_CALC 1
+#define DEBUG_CALC 0
 
 /*!
  * @brief Initializes a BIQUAD_T structure.
  *
  * @returns A pointer to a structure of type BIQUAD_T is returned containing the
- *          fields necessary for FIR filter implementation
+ *          fields necessary for IIR filter implementation
  */
 BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int blocksize) {
+  
   // Allocate memory for BIQUAD_T structure
   BIQUAD_T *s;
   s = malloc(sizeof(BIQUAD_T));
@@ -50,62 +50,29 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   s->sections = sections;
   s->g = g;
   s->bSize = blocksize;
-  s->v_ind = 0;
-
-  // s->a = (float *[3]) malloc(sizeof(float) * 3);
-  // s->b = malloc(sizeof(float) * 3);
 
   ///////////////////////
   // Memory allocation //
   ///////////////////////
   int i;
-  for (i = 0; i < blocksize; i++) {
-    s->a[i] = (float *) malloc(sizeof(float) * 3);
+
+  for (i = 0; i < sections; i++) {
+  	s->v_buff[i] = (float *) malloc(sizeof(float) * 2);
+    if (s->v_buff[i] == NULL) return NULL;
+    s->v_buff[i][0] = 0;
+    s->v_buff[i][1] = 0;
+  }
+
+  for (i = 0; i < sections; i++) {
+  	s->a[i] = (float *) malloc(sizeof(float) * 3);
     if (s->a[i] == NULL) return NULL;
     s->a[i] = a[i];
   }
-  for (i = 0; i < blocksize; i++) {
+
+  for (i = 0; i < sections; i++) {
     s->b[i] = (float *) malloc(sizeof(float) * 3);
     if (s->b[i] == NULL) return NULL;
     s->b[i] = b[i];
-  }
-
-  s->in_buff = (float *) malloc(blocksize*sizeof(float));
-  if (s->in_buff == NULL) return NULL;
-
-  ///////////////////////////////////////////////////////
-  // Initialization of dynamically allocated variables //
-  ///////////////////////////////////////////////////////
-  // s->a = a;
-  // s->b = b;
-  for (i=0; i<blocksize; i++) {
-    s->in_buff[i] = 0.0;
-  }
-
-
-  if (DEBUG_INIT) {
-    printf("Biquad initialized\n");
-    printf("\tsections = %d,\tg = %f,\tbSize = %d,\tv_ind = %d\n",s->sections,
-            s->g, s->bSize, s->v_ind);
-    for (i = 0; i < sections; i++) {
-      printf("Filter %d coefficients:\n", i);
-      int j;
-      for (j = 0; j < 3; j++) {
-        printf("b[%d][%d] = %f\t", i,j,b[i][j]);
-      }
-      printf("\n");
-      for (j = 0; j < 3; j++) {
-        printf("a[%d][%d] = %f\t", i,j,a[i][j]);
-      }
-      printf("\n");
-    }
-    for (i = 0; i < 3; i++) {
-      printf("v_buff[%d] = %f\t", i,s->v_buff[i]);
-    }
-    printf("\n");
-    for (i = 0; i < s->bSize; i++) {
-      printf("in_buff[%d] = %f\n", i,s->in_buff[i]);
-    }
   }
 
   return s;
@@ -119,42 +86,29 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
  */
 
 void calc_biquad(BIQUAD_T *s, float *x, float *y) {
+
   DEBUG_CALC && printf("Entering calc_biquad()\n");
-  int bq,n;
-  float * stage = (float *) malloc((s->sections) * sizeof(float));
+
+  int bq, n;
+  float v_tmp;
+
   for(bq = 0; bq < s->sections; bq++) {
-    DEBUG_CALC && printf("bq = %d\n", bq);
+
     for(n = 0; n < s->bSize; n++) {
-      DEBUG_CALC && printf("n = %d\n",n);
-      int z1 = s->v_ind - 1;
-      z1 = (z1 >= 0) ? z1 : z1 + 3;
-      int z2 = s->v_ind - 2;
-      z2 = (z2 >= 0) ? z2 : z2 + 3;
 
+      v_tmp = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[bq][1] - s->a[bq][2]*s->v_buff[bq][0];
+      x[n] = s->b[bq][0]*v_tmp + s->b[bq][1]*s->v_buff[bq][1] + s->b[bq][2]*s->v_buff[bq][0];
+      s->v_buff[bq][0] = s->v_buff[bq][1];
+      s->v_buff[bq][1] = v_tmp;
 
-      if (bq == 0) {
-        DEBUG_CALC && printf("x[n] = %f\n", x[n]);
-        s->v_buff[s->v_ind] = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[z1] - s->a[bq][2]*s->v_buff[z2];
-      } else {
-        s->v_buff[s->v_ind] = s->a[bq][0]*s->in_buff[n] - s->a[bq][1]*s->v_buff[z1] - s->a[bq][2]*s->v_buff[z2];
-      }
-
-
-      if (bq == s->sections-1) {
-        y[n] = s->g * (s->b[bq][0]*s->v_buff[s->v_ind] + s->b[bq][1]*s->v_buff[z1] + s->b[bq][2]*s->v_buff[z2]);
-      } else {
-        s->in_buff[n] = s->b[bq][0]*s->v_buff[s->v_ind] + s->b[bq][1]*s->v_buff[z1] + s->b[bq][2]*s->v_buff[z2];
-      }
-
-      s->v_ind++;
-      if (s->v_ind == 3) {
-        s->v_ind = 0;
-      }
     }
 
+    for(n = 0; n < s->bSize; n++){
+    	y[n] = (s->g)*x[n];
+  	}
 
   }
-  DEBUG_CALC && printf("Exiting calc_biquad()\n");
+
 }
 
 /*!
