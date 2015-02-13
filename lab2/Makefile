@@ -4,7 +4,7 @@ T1_TARGET = task1
 T2_TARGET = task2
 
 #OBJS  = group02_lab2.o
-BOARD_OBJS = board.o
+BOARD_OBJS = board_biquad.o board_fir.o
 T1_OBJS = task1.o ece486_fir.o
 T2_OBJS = task2.o ece486_biquad.o
 
@@ -47,8 +47,14 @@ all: $(T1_TARGET) $(T2_TARGET) $(BOARD_TARGET) $(BOARD_TARGET).bin
 ece486_fir.o: ece486_fir.c ece486_fir.h
 	gcc -c ece486_fir.c -o ece486_fir.o
 
+board_fir.o: ece486_fir.c ece486_fir.h
+	$(CC) -c ece486_fir.c -o board_fir.o $(CFLAGS)
+
 ece486_biquad.o: ece486_biquad.c ece486_biquad.h
 	gcc -c ece486_biquad.c -o ece486_biquad.o
+
+board_biquad.o: ece486_biquad.c ece486_biquad.h
+	$(CC) -c ece486_biquad.c -o board_biquad.o $(CFLAGS)
 
 $(T1_TARGET): $(T1_OBJS)
 	gcc -o $(T1_TARGET) $(T1_OBJS)
@@ -68,13 +74,13 @@ debug : LDFLAGS += -Wl,-Map,$(TARGET).map
 debug : all
 
 $(BOARD_TARGET): $(BOARD_OBJS)
-	$(CC)  -o $(BOARD_TARGET) $(CFLAGS) $(LDFLAGS) $(BOARD_OBJS) $(LIBS)
+	$(CC) board.c -o $(BOARD_TARGET) $(CFLAGS) $(LDFLAGS) $(BOARD_OBJS) $(LIBS)
 
 $(BOARD_TARGET).bin: $(BOARD_TARGET)
 	$(OBJCOPY) -Obinary $(BOARD_TARGET) $(BOARD_TARGET).bin
 
-board.o: board.c ece486_fir.o ece486_iir.o
-	gcc -c board.c -o board.o
+# board.o: board.c ece486_fir.o ece486_biquad.o
+# 	$(CC) -c board.c -o board.o $(LDFLAGS) $(LIBS)
 
 flash: $(BOARD_TARGET).bin
 	st-flash write $(BOARD_TARGET).bin 0x08000000
