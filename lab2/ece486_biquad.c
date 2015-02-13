@@ -8,21 +8,27 @@
  * 
  * @date Feb 10, 2015
  * 
- * Now describe the details of what's going on with the functions in this
- * file.  This can be several paragraphs long and gives the general
- * overview of what's going on.  Virtually every file (.h or .c or 
- * other source code) should include a comment block to describe 
- * its purpose or give an overview of the use of the code. 
- * 
- * Paragraphs are indicated by a blank line in the comment block
- * (except for the optional "*" character at the start of the line).
- * 
- * @verbatim
- *   If doxygen formatting starts to drive you nuts, you can use the 
- *   verbatim construct to avoid all the re-structuring.
- *       1) Who knows if it will help?
- *       2) Note that here are better ways to format lists within doxygen
- * @endverbatim
+ * This file contains the subroutine definitions necessary for performing the
+ * IIR filter calculations on a block of samples.
+ *
+ * The init_biquad() function initializes an BIQUAD_T variable, allocating memory for
+ * all fields. The function takes an integer 'sections' which is 
+ * the number of biquad filter sections to be used for calculating H(z).
+ * The float 'g' is passed as the gain to be multiplied by every biquad section.
+ * Two 2-dimensional arrays are passed as the 'a' coefficients and 'b' coefficients.
+ * An integer 'blocksize' indicates the number of samples in each block of 
+ * data to be processed. 
+ * A 2-dimenstional array 'v_buff' that keeps the 2 previous v(n) samples is 
+ * initialized to 0.
+ * The function returns a pointer to a BIQUAD_T structure.
+ *
+ * The calc_biquad() function performs the IIR filtering on 'blocksize' samples of
+ * input 'x', storing the corresponding outputs in 'y'. The information needed
+ * to perform the calculation is passed to the function with the BIQUAD_T struct
+ * 's'.
+ *
+ * The destroy_biquad() function de-allocates all memory pointed to by BIQUAD_T *'s' 
+ * allocated by init_biquad().
  * 
  */
 
@@ -39,6 +45,7 @@
  * @returns A pointer to a structure of type BIQUAD_T is returned containing the
  *          fields necessary for IIR filter implementation
  */
+
 BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int blocksize) {
   
   // Allocate memory for BIQUAD_T structure
@@ -92,17 +99,20 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
   int bq, n;
   float v_tmp;
 
+  // build each biquad filter section
   for(bq = 0; bq < s->sections; bq++) {
-
+    // find corresponding output for each input n for blocksize samples
     for(n = 0; n < s->bSize; n++) {
-
-      v_tmp = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[bq][1] - s->a[bq][2]*s->v_buff[bq][0];
-      x[n] = s->b[bq][0]*v_tmp + s->b[bq][1]*s->v_buff[bq][1] + s->b[bq][2]*s->v_buff[bq][0];
+      // v[n] = a0*x[n] - a1*v[n - 1] - a2*v[n - 2]
+      v_tmp = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[bq][1] - s->a[bq][2]*s->v_buff[bq][0]; // find intermediate value for calculating x[n]
+      // y[n] = b0*v[n] + b1*v[n - 1] + b2*v[n - 2]
+      x[n] = s->b[bq][0]*v_tmp + s->b[bq][1]*s->v_buff[bq][1] + s->b[bq][2]*s->v_buff[bq][0]; // calculate x[n]
+      // update previous v samples array
       s->v_buff[bq][0] = s->v_buff[bq][1];
       s->v_buff[bq][1] = v_tmp;
 
     }
-
+    // multiply by gain to achieve output 
     for(n = 0; n < s->bSize; n++){
     	y[n] = (s->g)*x[n];
   	}
@@ -118,11 +128,13 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
 
 void destroy_biquad(BIQUAD_T *s) {
   int i;
+  // free memory allocated for coefficient arrays
   for (i = 0; i < s->bSize; i++) {
     free(s->a[i]);
     free(s->b[i]);
   }
   free(s->a);
   free(s->b);
+  // free memory allocated for BIQUAD_T struct 's'
   free(s);
 }
