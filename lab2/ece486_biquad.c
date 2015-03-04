@@ -56,6 +56,8 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   // intialize variables
   s->sections = sections;
   s->g = g;
+  s->a = a; // added by JS 3-3-15
+  s->b = b; // added by JS 3-3-15
   s->bSize = blocksize;
 
   ///////////////////////
@@ -70,17 +72,18 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
     s->v_buff[i][1] = 0;
   }
 
-  for (i = 0; i < sections; i++) {
-  	s->a[i] = (float *) malloc(sizeof(float) * 3);
-    if (s->a[i] == NULL) return NULL;
-    s->a[i] = a[i];
-  }
+  // Removed by JS 3-3-15
+  // for (i = 0; i < sections; i++) {
+  // 	s->a[i] = (float *) malloc(sizeof(float) * 3);
+  //   if (s->a[i] == NULL) return NULL;
+  //   s->a[i] = a[i];
+  // }
 
-  for (i = 0; i < sections; i++) {
-    s->b[i] = (float *) malloc(sizeof(float) * 3);
-    if (s->b[i] == NULL) return NULL;
-    s->b[i] = b[i];
-  }
+  // for (i = 0; i < sections; i++) {
+  //   s->b[i] = (float *) malloc(sizeof(float) * 3);
+  //   if (s->b[i] == NULL) return NULL;
+  //   s->b[i] = b[i];
+  // }
 
   return s;
 }
@@ -112,13 +115,12 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
       s->v_buff[bq][1] = v_tmp;
 
     }
-    // multiply by gain to achieve output 
-    for(n = 0; n < s->bSize; n++){
-    	y[n] = (s->g)*x[n];
-  	}
-
   }
-
+  // moved by JS 3-3-15
+  // multiply by gain to achieve output 
+  for(n = 0; n < s->bSize; n++){
+    y[n] = (s->g)*x[n];
+  }
 }
 
 /*!
@@ -137,4 +139,6 @@ void destroy_biquad(BIQUAD_T *s) {
   free(s->b);
   // free memory allocated for BIQUAD_T struct 's'
   free(s);
+  // NULL pointer for safety
+  s = NULL;
 }

@@ -87,4 +87,6 @@ void destroy_fir(FIR_T *s){
 	free(s->history);
   // Free structure
   free(s);
+  // NULL pointer for safety
+  s = NULL;
 }
