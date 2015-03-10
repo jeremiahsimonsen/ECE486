@@ -35,23 +35,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "arm_math.h"
 
 #include "ece486_fir.h"
-#include "ece486_biquad.h"
 
 int main(void)
 {
 	int nsamp, i;
- 	float32_t *input, *output1, *output2;
+ 	float *input, *output1, *output2;
  	initialize(FS_48K, MONO_IN, STEREO_OUT); 	// Set up the DAC/ADC interface
  	
  	// Allocate Required Memory
  	nsamp = getblocksize();
 	
- 	input = (float32_t *)malloc(sizeof(float)*nsamp);
- 	output1 = (float32_t *)malloc(sizeof(float)*nsamp);
- 	output2 = (float32_t *)malloc(sizeof(float)*nsamp);
+ 	input = (float *)malloc(sizeof(float)*nsamp);
+ 	output1 = (float *)malloc(sizeof(float)*nsamp);
+ 	output2 = (float *)malloc(sizeof(float)*nsamp);
   
  	if (input==NULL || output1==NULL || output2==NULL) {
  		flagerror(MEMORY_ALLOCATION_ERROR);
@@ -59,7 +57,7 @@ int main(void)
  	}
 
  	// Impulse response/FIR coefficient array
- 	float32_t h[20] = {0.000168, 
+ 	float h[20] = {0.000168, 
                   -0.000883, 
                   -0.004735, 
                   -0.010728, 

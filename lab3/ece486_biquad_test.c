@@ -1,16 +1,16 @@
 /*!
  * @file
  * 
- * @brief ECE 486 Spring 2015 Lab 3 Real-time implementation of an IIR filter
- * using the STM-provided functions
+ * @brief ECE 486 Spring 2015 Lab 3 Real-time implementation of a IIR filter 
+ * using the developed routines
  * 
  * @author ECE486 Lab Group 2
  * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
  * 
  * @date Mar 10, 2015
  * 
- * This file contains the real-time implementation of a 4th-order IIR filter
- * using the optimized DSP library functions provided by STM.
+ * This file contains the real-time implementation of a 4th-order, IIR filter
+ * using the developed subroutines. 
  * The filter will reject 7.2 kHz and 12 kHz when Fs = 48 kHz; i.e., it rejects
  * f = 0.15 and f = 0.25
  *
@@ -34,39 +34,37 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "arm_math.h"
 
-#include "ece486_fir.h"
 #include "ece486_biquad.h"
 
 int main(void)
 {
 	int nsamp, i;
- 	float32_t *input, *output1, *output2;
+ 	float *input, *output1, *output2;
  	initialize(FS_48K, MONO_IN, STEREO_OUT); 	// Set up the DAC/ADC interface
  	
  	// Allocate Required Memory
  	nsamp = getblocksize();
 	
- 	input = (float32_t *)malloc(sizeof(float)*nsamp);
- 	output1 = (float32_t *)malloc(sizeof(float)*nsamp);
- 	output2 = (float32_t *)malloc(sizeof(float)*nsamp);
+ 	input = (float *)malloc(sizeof(float)*nsamp);
+ 	output1 = (float *)malloc(sizeof(float)*nsamp);
+ 	output2 = (float *)malloc(sizeof(float)*nsamp);
   
  	if (input==NULL || output1==NULL || output2==NULL) {
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
  	}
 
- 	// IIR filter coefficient array
- 	// {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22}
- 	float32_t coef[10] = {2.2044, 0.0, 2.2044, 0.6088, -0.9702,
- 							2.9658, -3.4865, 2.9658, 0.3500, 0.4250};
+ 	// Filter coefficients
+ 	float a[2][3] = {{1.0, -0.6088, 0.9702},
+           {1.0, -0.3500, -0.4250}};
 
- 	// state buffer used by arm routine of size 2*NUM_SECTIONS
- 	float32_t *state = (float32_t *)malloc(sizeof(float32_t)*(2*2));
- 	// arm biquad structure initialization
- 	arm_biquad_cascade_df2T_instance_f32 f1;
- 	arm_biquad_cascade_df2T_init_f32(&f1,2,&coef[0],state);
+  	float b[2][3] = {{2.2044, 0.0, 2.2044},
+           {2.9658, -3.4865, 2.9658}};
+
+    // Biquad structure initialization
+	BIQUAD_T *f1;
+	f1 = init_biquad(2, 0.01718740, a, b, nsamp);
 
 	// Infinite Loop to process the data stream, "nsamp" samples at a time	
 	while(1){
@@ -83,12 +81,8 @@ int main(void)
     		output2[i] = input[i];
     	}
     	DIGITAL_IO_SET(); 	// Use a scope on PC4 to measure execution time
-    	// Call the arm provided FIR filter routine
-    	arm_biquad_cascade_df2T_f32(&f1, input, output1, nsamp);
-    	// Multiply by the gain factor
-    	for(i=0;i<nsamp;i++) {
-    		output1[i] = output1[i] * 0.01718740;
-    	}
+    	// Call the biquad filter routine
+    	calc_biquad(f1,input,output1);
     	
     	DIGITAL_IO_RESET();	// (falling edge....  done processing data )
     	
