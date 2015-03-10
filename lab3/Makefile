@@ -1,10 +1,12 @@
 # Target definitions
 ARM_FIR_TARGET = arm_fir_test
 ECE486_FIR_TARGET = ece486_fir_test
+ARM_BIQUAD_TARGET = arm_biquad_test
 
 # Object definitions
 ARM_FIR_OBJS = arm_fir_test.o
 ECE486_FIR_OBJS = ARM_fir.o ece486_fir_test.o
+ARM_BIQUAD_OBJS = arm_biquad_test.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
@@ -39,7 +41,7 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
 
 ################################################################
 # Rules
-all: $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin
+all: $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin $(ARM_BIQUAD_TARGET) $(ARM_BIQUAD_TARGET).bin
 
 debug : CFLAGS += -DDEBUG -g -Og
 debug : LDFLAGS += -Wl,-Map,$(TARGET).map
@@ -51,12 +53,21 @@ $(ARM_FIR_TARGET): $(ARM_FIR_OBJS)
 
 $(ARM_FIR_TARGET).bin: $(ARM_FIR_TARGET)
 	$(OBJCOPY) -Obinary $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin
+
 # Developed FIR routine test program
 $(ECE486_FIR_TARGET): $(ECE486_FIR_OBJS)
 	$(CC) -o $(ECE486_FIR_TARGET) $(CFLAGS) $(LDFLAGS) $(ECE486_FIR_OBJS) $(LIBS)
 
 $(ECE486_FIR_TARGET).bin: $(ECE486_FIR_TARGET)
 	$(OBJCOPY) -Obinary $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin
+
+# Optimized STM IIR routine test program
+$(ARM_BIQUAD_TARGET): $(ARM_BIQUAD_OBJS)
+	$(CC) -o $(ARM_BIQUAD_TARGET) $(CFLAGS) $(LDFLAGS) $(ARM_BIQUAD_OBJS) $(LIBS)
+
+$(ARM_BIQUAD_TARGET).bin: $(ARM_BIQUAD_TARGET)
+	$(OBJCOPY) -Obinary $(ARM_BIQUAD_TARGET) $(ARM_BIQUAD_TARGET).bin
+
 # Dependencies
 ARM_biquad.o: ece486_biquad.c ece486_biquad.h
 	$(CC) -c ece486_biquad.c -o ARM_biquad.o $(CFLAGS)
@@ -71,6 +82,10 @@ flash_arm_fir: $(ARM_FIR_TARGET).bin
 flash_ece486_fir: $(ECE486_FIR_TARGET).bin
 	st-flash write $(ECE486_FIR_TARGET).bin 0x08000000
 
+flash_arm_biquad: $(ARM_BIQUAD_TARGET).bin
+	st-flash write $(ARM_BIQUAD_TARGET).bin 0x08000000
+
 clean:
 	rm -f $(ARM_FIR_OBJS) $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ARM_FIR_TARGET).map;
 	rm -f $(ECE486_FIR_OBJS) $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin $(ECE486_FIR_TARGET).map;
+	rm -f $(ARM_BIQUAD_OBJS) $(ARM_BIQUAD_TARGET) $(ARM_BIQUAD_TARGET).bin $(ARM_BIQUAD_TARGET).map;
