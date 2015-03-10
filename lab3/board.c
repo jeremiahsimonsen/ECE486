@@ -1,12 +1,12 @@
 /*!
  * @file
  * 
- * @brief ECE 486 Spring 2015 Lab 2 Real-time implementation
+ * @brief ECE 486 Spring 2015 Lab 3 Real-time implementation
  * 
  * @author ECE486 Lab Group 2
  * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
  * 
- * @date Feb 13, 2015
+ * @date Mar 10, 2015
  * 
  * This file contains the real-time implementation of the FIR and IIR filter
  * subroutines on the STM32F407xx dev board.
@@ -37,14 +37,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "arm_math.h"
 
 #include "ece486_fir.h"
 #include "ece486_biquad.h"
 
 int main(void)
 {
-  int nsamp,i;
-  float *input, *output1, *output2;
+  int nsamp, i;
+  float32_t *input, *output1, *output2;
   static float sign=1.0;
   static int button_count = 0;
   char outstr[100];
@@ -56,22 +57,22 @@ int main(void)
    */
   nsamp = getblocksize();
 	
-  input = (float *)malloc(sizeof(float)*nsamp);
-  output1 = (float *)malloc(sizeof(float)*nsamp);
-  output2 = (float *)malloc(sizeof(float)*nsamp);
+  input = (float32_t *)malloc(sizeof(float)*nsamp);
+  output1 = (float32_t *)malloc(sizeof(float)*nsamp);
+  output2 = (float32_t *)malloc(sizeof(float)*nsamp);
   
   if (input==NULL || output1==NULL || output2==NULL) {
     flagerror(MEMORY_ALLOCATION_ERROR);
     while(1);
   }
   
-  float a[2][3] = {{1.0, -0.6088, 0.9702},
-           {1.0, -0.3500, -0.4250}};
+  // float a[2][3] = {{1.0, -0.6088, 0.9702},
+  //          {1.0, -0.3500, -0.4250}};
 
-  float b[2][3] = {{2.2044, 0.0, 2.2044},
-           {2.9658, -3.4865, 2.9658}};
+  // float b[2][3] = {{2.2044, 0.0, 2.2044},
+  //          {2.9658, -3.4865, 2.9658}};
 
-  float h[20] = {0.000168, 
+  float32_t h[20] = {0.000168, 
                   -0.000883, 
                   -0.004735, 
                   -0.010728, 
@@ -92,11 +93,15 @@ int main(void)
                   -0.004735, 
                   -0.000883};
 
-  FIR_T * f1;
-  f1 = init_fir(h,20,nsamp);
+  // FIR_T * f1;
+  // f1 = init_fir(h,20,nsamp);
 
-  BIQUAD_T *f2;
-  f2 = init_biquad(2, 0.01718740, a, b, nsamp);
+  // BIQUAD_T *f2;
+  // f2 = init_biquad(2, 0.01718740, a, b, nsamp);
+
+  float32_t *state = (float32_t *) malloc(sizeof(float)*(20+nsamp-1));
+  arm_fir_instance_f32 f1;
+  arm_fir_init_f32(&f1,20,&h[0],state,nsamp);
 
   /*
    * Infinite Loop to process the data stream, "nsamp" samples at a time
@@ -108,26 +113,19 @@ int main(void)
      *   we work on the new data buffer.
      */
     getblock(input);	// Wait here until the input buffer is filled... Then process	
-    // for(i=0;i<nsamp;i++) {
-    //   input[i]++;
-    // }
 
     /*
      * signal processing code to calculate the required output buffers
      */
-    
+    for(i=0;i<nsamp;i++) {
+      output2[i] = input[i];
+    }
     DIGITAL_IO_SET(); 	// Use a scope on PC4 to measure execution time
-    // for(i=0;i<nsamp;i++) {
-    //   output2[i] = input[i];
-    // }  
-    calc_fir(f1,input,output1);
-    calc_biquad(f2,input,output2);
+      
+    arm_fir_f32(&f1, input, output1, nsamp);
     
     DIGITAL_IO_RESET();	// (falling edge....  done processing data )
     
-    // for(i=0;i<nsamp;i++) {
-    //   input[i]--;
-    // }
     /*
      * pass the processed working buffer back for DAC output
      */
