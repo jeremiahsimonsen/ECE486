@@ -1,10 +1,10 @@
 # Target definitions
-ARM_TARGET = arm
+ARM_FIR_TARGET = arm_fir_test
+ECE486_FIR_TARGET = ece486_fir_test
 
 # Object definitions
-ARM_OBJS = ARM_biquad.o ARM_fir.o board.o
-SRC = ece486_biquad.c ece486_biquad.h ece486_fir.c ece486_fir.h
-C_FILES = ece486_biquad.c ece486_fir.c
+ARM_FIR_OBJS = arm_fir_test.o
+ECE486_FIR_OBJS = ARM_fir.o ece486_fir_test.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
@@ -39,19 +39,25 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
 
 ################################################################
 # Rules
-all: $(ARM_TARGET) $(ARM_TARGET).bin
+all: $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin
 
 debug : CFLAGS += -DDEBUG -g -Og
 debug : LDFLAGS += -Wl,-Map,$(TARGET).map
 
 debug : all
+# Optimized STM FIR routine test program
+$(ARM_FIR_TARGET): $(ARM_FIR_OBJS)
+	$(CC) -o $(ARM_FIR_TARGET) $(CFLAGS) $(LDFLAGS) $(ARM_FIR_OBJS) $(LIBS)
 
-$(ARM_TARGET): $(ARM_OBJS)
-	$(CC) -o $(ARM_TARGET) $(CFLAGS) $(LDFLAGS) $(ARM_OBJS) $(LIBS)
+$(ARM_FIR_TARGET).bin: $(ARM_FIR_TARGET)
+	$(OBJCOPY) -Obinary $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin
+# Developed FIR routine test program
+$(ECE486_FIR_TARGET): $(ECE486_FIR_OBJS)
+	$(CC) -o $(ECE486_FIR_TARGET) $(CFLAGS) $(LDFLAGS) $(ECE486_FIR_OBJS) $(LIBS)
 
-$(ARM_TARGET).bin: $(ARM_TARGET)
-	$(OBJCOPY) -Obinary $(ARM_TARGET) $(ARM_TARGET).bin
-
+$(ECE486_FIR_TARGET).bin: $(ECE486_FIR_TARGET)
+	$(OBJCOPY) -Obinary $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin
+# Dependencies
 ARM_biquad.o: ece486_biquad.c ece486_biquad.h
 	$(CC) -c ece486_biquad.c -o ARM_biquad.o $(CFLAGS)
 
@@ -59,8 +65,12 @@ ARM_fir.o: ece486_fir.c ece486_fir.h
 	$(CC) -c ece486_fir.c -o ARM_fir.o $(CFLAGS)
 
 
-flash: $(ARM_TARGET).bin
-	st-flash write $(ARM_TARGET).bin 0x08000000
+flash_arm_fir: $(ARM_FIR_TARGET).bin
+	st-flash write $(ARM_FIR_TARGET).bin 0x08000000
+
+flash_ece486_fir: $(ECE486_FIR_TARGET).bin
+	st-flash write $(ECE486_FIR_TARGET).bin 0x08000000
 
 clean:
-	rm -f $(ARM_OBJS) $(ARM_TARGET) $(ARM_TARGET).bin $(ARM_TARGET).map;
+	rm -f $(ARM_FIR_OBJS) $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ARM_FIR_TARGET).map;
+	rm -f $(ECE486_FIR_OBJS) $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin $(ECE486_FIR_TARGET).map;

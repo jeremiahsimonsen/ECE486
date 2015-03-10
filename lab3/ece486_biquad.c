@@ -36,9 +36,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG_INIT 0
-#define DEBUG_CALC 0
-
 /*!
  * @brief Initializes a BIQUAD_T structure.
  *
@@ -56,8 +53,8 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   // intialize variables
   s->sections = sections;
   s->g = g;
-  s->a = a; // added by JS 3-3-15
-  s->b = b; // added by JS 3-3-15
+  s->a = a;
+  s->b = b;
   s->bSize = blocksize;
 
   ///////////////////////
@@ -72,19 +69,6 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
     s->v_buff[i][1] = 0;
   }
 
-  // Removed by JS 3-3-15
-  // for (i = 0; i < sections; i++) {
-  // 	s->a[i] = (float *) malloc(sizeof(float) * 3);
-  //   if (s->a[i] == NULL) return NULL;
-  //   s->a[i] = a[i];
-  // }
-
-  // for (i = 0; i < sections; i++) {
-  //   s->b[i] = (float *) malloc(sizeof(float) * 3);
-  //   if (s->b[i] == NULL) return NULL;
-  //   s->b[i] = b[i];
-  // }
-
   return s;
 }
 
@@ -96,8 +80,6 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
  */
 
 void calc_biquad(BIQUAD_T *s, float *x, float *y) {
-
-  DEBUG_CALC && printf("Entering calc_biquad()\n");
 
   int bq, n;
   float v_tmp;
