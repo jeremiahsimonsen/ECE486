@@ -1,12 +1,10 @@
-#TARGET=group02_lab2
-BOARD_TARGET = board
-T1_TARGET = task1
-T2_TARGET = task2
+# Target definitions
+ARM_TARGET = arm
 
-#OBJS  = group02_lab2.o
-BOARD_OBJS = board_biquad.o board_fir.o
-T1_OBJS = task1.o ece486_fir.o
-T2_OBJS = task2.o ece486_biquad.o
+# Object definitions
+ARM_OBJS = ARM_biquad.o ARM_fir.o board.o
+SRC = ece486_biquad.c ece486_biquad.h ece486_fir.c ece486_fir.h
+C_FILES = ece486_biquad.c ece486_fir.c
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
@@ -41,51 +39,28 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
 
 ################################################################
 # Rules
-#all: fir_test $(TARGET) $(TARGET).bin
-all: $(T1_TARGET) $(T2_TARGET) $(BOARD_TARGET) $(BOARD_TARGET).bin
-
-ece486_fir.o: ece486_fir.c ece486_fir.h
-	gcc -c ece486_fir.c -o ece486_fir.o
-
-board_fir.o: ece486_fir.c ece486_fir.h
-	$(CC) -c ece486_fir.c -o board_fir.o $(CFLAGS)
-
-ece486_biquad.o: ece486_biquad.c ece486_biquad.h
-	gcc -c ece486_biquad.c -o ece486_biquad.o
-
-board_biquad.o: ece486_biquad.c ece486_biquad.h
-	$(CC) -c ece486_biquad.c -o board_biquad.o $(CFLAGS)
-
-$(T1_TARGET): $(T1_OBJS)
-	gcc -o $(T1_TARGET) $(T1_OBJS)
-
-task1.o: test_fir.c ece486_fir.o
-	gcc -c test_fir.c -o task1.o
-
-$(T2_TARGET): $(T2_OBJS)
-	gcc -o $(T2_TARGET) $(T2_OBJS)
-
-task2.o: test_biquad.c ece486_biquad.o
-	gcc -c test_biquad.c -o task2.o
+all: $(ARM_TARGET) $(ARM_TARGET).bin
 
 debug : CFLAGS += -DDEBUG -g -Og
 debug : LDFLAGS += -Wl,-Map,$(TARGET).map
 
 debug : all
 
-$(BOARD_TARGET): $(BOARD_OBJS)
-	$(CC) board.c -o $(BOARD_TARGET) $(CFLAGS) $(LDFLAGS) $(BOARD_OBJS) $(LIBS)
+$(ARM_TARGET): $(ARM_OBJS)
+	$(CC) -o $(ARM_TARGET) $(CFLAGS) $(LDFLAGS) $(ARM_OBJS) $(LIBS)
 
-$(BOARD_TARGET).bin: $(BOARD_TARGET)
-	$(OBJCOPY) -Obinary $(BOARD_TARGET) $(BOARD_TARGET).bin
+$(ARM_TARGET).bin: $(ARM_TARGET)
+	$(OBJCOPY) -Obinary $(ARM_TARGET) $(ARM_TARGET).bin
 
-# board.o: board.c ece486_fir.o ece486_biquad.o
-# 	$(CC) -c board.c -o board.o $(LDFLAGS) $(LIBS)
+ARM_biquad.o: ece486_biquad.c ece486_biquad.h
+	$(CC) -c ece486_biquad.c -o ARM_biquad.o $(CFLAGS)
 
-flash: $(BOARD_TARGET).bin
-	st-flash write $(BOARD_TARGET).bin 0x08000000
+ARM_fir.o: ece486_fir.c ece486_fir.h
+	$(CC) -c ece486_fir.c -o ARM_fir.o $(CFLAGS)
+
+
+flash: $(ARM_TARGET).bin
+	st-flash write $(ARM_TARGET).bin 0x08000000
 
 clean:
-	rm -f $(BOARD_OBJS) $(BOARD_TARGET) $(BOARD_TARGET).bin $(BOARD_TARGET).map;
-	rm -f $(T1_OBJS) $(T1_TARGET);
-	rm -f $(T2_OBJS) $(T2_TARGET);
+	rm -f $(ARM_OBJS) $(ARM_TARGET) $(ARM_TARGET).bin $(ARM_TARGET).map;
