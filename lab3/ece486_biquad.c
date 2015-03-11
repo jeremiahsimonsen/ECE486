@@ -63,7 +63,7 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   int i;
 
   // changed by TR 3-11-15
-  s->v_buff = (float *[2]) malloc((s->sections) * sizeof(float));
+  s->v_buff = (float (*)[2]) malloc((s->sections) * sizeof(float));
   if (s->v_buff == NULL) return NULL;
   
   for(i=0; i<sections; i++){
@@ -129,7 +129,7 @@ void destroy_biquad(BIQUAD_T *s) {
   free(s->a);
   s->a = NULL;
   free(s->b);
-  s-b = NULL;
+  s->b = NULL;
   // free memory allocated for BIQUAD_T struct 's'
   free(s);
   // NULL pointer for safety

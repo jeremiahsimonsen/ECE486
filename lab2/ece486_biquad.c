@@ -36,9 +36,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG_INIT 0
-#define DEBUG_CALC 0
-
 /*!
  * @brief Initializes a BIQUAD_T structure.
  *
@@ -56,8 +53,8 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   // intialize variables
   s->sections = sections;
   s->g = g;
-  s->a = a; // added by JS 3-3-15
-  s->b = b; // added by JS 3-3-15
+  s->a = a;
+  s->b = b;
   s->bSize = blocksize;
 
   ///////////////////////
@@ -65,25 +62,25 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   ///////////////////////
   int i;
 
-  for (i = 0; i < sections; i++) {
-  	s->v_buff[i] = (float *) malloc(sizeof(float) * 2);
-    if (s->v_buff[i] == NULL) return NULL;
-    s->v_buff[i][0] = 0;
-    s->v_buff[i][1] = 0;
+  // changed by TR 3-11-15
+  s->v_buff = (float (*)[2]) malloc((s->sections) * sizeof(float));
+  if (s->v_buff == NULL) return NULL;
+  
+  for(i=0; i<sections; i++){
+	s->v_buff[i][0] = 0.0;
+	s->v_buff[i][1] = 0.0;
   }
 
-  // Removed by JS 3-3-15
-  // for (i = 0; i < sections; i++) {
-  // 	s->a[i] = (float *) malloc(sizeof(float) * 3);
-  //   if (s->a[i] == NULL) return NULL;
-  //   s->a[i] = a[i];
-  // }
-
-  // for (i = 0; i < sections; i++) {
-  //   s->b[i] = (float *) malloc(sizeof(float) * 3);
-  //   if (s->b[i] == NULL) return NULL;
-  //   s->b[i] = b[i];
-  // }
+  // Allow for a0 != 1
+  for (i=0; i < sections; i++) {
+    if (s->a[i][0] != 1.0) {
+      s->a[i][1] /= s->a[i][0];
+      s->a[i][2] /= s->a[i][0];
+      s->b[i][0] /= s->a[i][0];
+      s->b[i][1] /= s->a[i][0];
+      s->b[i][2] /= s->a[i][0];
+    }
+  }
 
   return s;
 }
@@ -97,8 +94,6 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
 
 void calc_biquad(BIQUAD_T *s, float *x, float *y) {
 
-  DEBUG_CALC && printf("Entering calc_biquad()\n");
-
   int bq, n;
   float v_tmp;
 
@@ -106,8 +101,8 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
   for(bq = 0; bq < s->sections; bq++) {
     // find corresponding output for each input n for blocksize samples
     for(n = 0; n < s->bSize; n++) {
-      // v[n] = a0*x[n] - a1*v[n - 1] - a2*v[n - 2]
-      v_tmp = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[bq][1] - s->a[bq][2]*s->v_buff[bq][0]; // find intermediate value for calculating x[n]
+      // v[n] = x[n] - a1*v[n - 1] - a2*v[n - 2]
+      v_tmp = x[n] - s->a[bq][1]*s->v_buff[bq][1] - s->a[bq][2]*s->v_buff[bq][0]; // find intermediate value for calculating x[n]
       // y[n] = b0*v[n] + b1*v[n - 1] + b2*v[n - 2]
       x[n] = s->b[bq][0]*v_tmp + s->b[bq][1]*s->v_buff[bq][1] + s->b[bq][2]*s->v_buff[bq][0]; // calculate x[n]
       // update previous v samples array
@@ -129,14 +124,12 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
  */
 
 void destroy_biquad(BIQUAD_T *s) {
-  int i;
-  // free memory allocated for coefficient arrays
-  for (i = 0; i < s->bSize; i++) {
-    free(s->a[i]);
-    free(s->b[i]);
-  }
+  // changed by TR 3-11-15
+  // free pointers to coefficient arrays
   free(s->a);
+  s->a = NULL;
   free(s->b);
+  s->b = NULL;
   // free memory allocated for BIQUAD_T struct 's'
   free(s);
   // NULL pointer for safety
