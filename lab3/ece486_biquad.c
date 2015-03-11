@@ -62,11 +62,13 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   ///////////////////////
   int i;
 
-  for (i = 0; i < sections; i++) {
-  	s->v_buff[i] = (float *) malloc(sizeof(float) * 2);
-    if (s->v_buff[i] == NULL) return NULL;
-    s->v_buff[i][0] = 0;
-    s->v_buff[i][1] = 0;
+  // changed by TR 3-11-15
+  s->v_buff = (float *[2]) malloc((s->sections) * sizeof(float));
+  if (s->v_buff == NULL) return NULL;
+  
+  for(i=0; i<sections; i++){
+	s->v_buff[i][0] = 0.0;
+	s->v_buff[i][1] = 0.0;
   }
 
   // Allow for a0 != 1
@@ -122,14 +124,12 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
  */
 
 void destroy_biquad(BIQUAD_T *s) {
-  int i;
-  // free memory allocated for coefficient arrays
-  for (i = 0; i < s->bSize; i++) {
-    free(s->a[i]);
-    free(s->b[i]);
-  }
+  // changed by TR 3-11-15
+  // free pointers to coefficient arrays
   free(s->a);
+  s->a = NULL;
   free(s->b);
+  s-b = NULL;
   // free memory allocated for BIQUAD_T struct 's'
   free(s);
   // NULL pointer for safety
