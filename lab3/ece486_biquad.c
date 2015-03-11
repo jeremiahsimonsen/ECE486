@@ -99,8 +99,8 @@ void calc_biquad(BIQUAD_T *s, float *x, float *y) {
   for(bq = 0; bq < s->sections; bq++) {
     // find corresponding output for each input n for blocksize samples
     for(n = 0; n < s->bSize; n++) {
-      // v[n] = a0*x[n] - a1*v[n - 1] - a2*v[n - 2]
-      v_tmp = s->a[bq][0]*x[n] - s->a[bq][1]*s->v_buff[bq][1] - s->a[bq][2]*s->v_buff[bq][0]; // find intermediate value for calculating x[n]
+      // v[n] = x[n] - a1*v[n - 1] - a2*v[n - 2]
+      v_tmp = x[n] - s->a[bq][1]*s->v_buff[bq][1] - s->a[bq][2]*s->v_buff[bq][0]; // find intermediate value for calculating x[n]
       // y[n] = b0*v[n] + b1*v[n - 1] + b2*v[n - 2]
       x[n] = s->b[bq][0]*v_tmp + s->b[bq][1]*s->v_buff[bq][1] + s->b[bq][2]*s->v_buff[bq][0]; // calculate x[n]
       // update previous v samples array
