@@ -69,6 +69,17 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
     s->v_buff[i][1] = 0;
   }
 
+  // Allow for a0 != 1
+  for (i=0; i < sections; i++) {
+    if (s->a[i][0] != 1.0) {
+      s->a[i][1] /= s->a[i][0];
+      s->a[i][2] /= s->a[i][0];
+      s->b[i][0] /= s->a[i][0];
+      s->b[i][1] /= s->a[i][0];
+      s->b[i][2] /= s->a[i][0];
+    }
+  }
+
   return s;
 }
 
