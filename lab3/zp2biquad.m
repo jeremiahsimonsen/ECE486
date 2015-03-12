@@ -22,7 +22,7 @@ for n=1:length(a(:,1))
 	end
 end
 s = strcat(s, sprintf('\nfloat g = %g;\n',g));
-s
 
-% fd = fopen('biquad_coef.h');
-% fprintf(fd,
+fd = fopen('biquad_coef.h','w');
+fprintf(fd,'%s',s);
+fclose(fd);
