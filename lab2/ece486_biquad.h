@@ -50,7 +50,7 @@ typedef struct biquad_struct {
   int sections;         /*!< Number of biquad filter sections to be implemented */
   float g;              /*!< scale factor */
   int bSize;            /*!< Number of samples */
-  float *v_buff[2];     /*!< Buffer to store last n_coefs samples */
+  float (*v_buff)[2];     /*!< Buffer to store last n_coefs samples */
   float (*a)[3];          /*!< array of 'a' coefficients arrays */
   float (*b)[3];          /*!< array of 'b' coefficients arrays */
 
