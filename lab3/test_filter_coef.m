@@ -14,7 +14,7 @@ g = 0.0264722;
 
 x = rand(1,1001);
 
-y1 = filter(g*b1,a1,x);
+y1 = filter(g.*b1,a1,x);
 y2 = filter(b2,a2,y1);
 y3 = filter(b3,a3,y2);
 y4 = filter(b4,a4,y3);
@@ -22,5 +22,5 @@ y5 = filter(b5,a5,y4);
 
 Hf_in = fft(x);
 Hf_out = fft(y5);
-f = linspace(0,0.5,length(x));
+f = linspace(0,1,length(x));
 plot(f,20*log10(abs(Hf_out./Hf_in)));
