@@ -21,4 +21,8 @@ for n=1:length(a(:,1))
 		s = strcat(s, sprintf('{%g, %g, %g}};\n',b(n,1),b(n,2),b(n,3)));
 	end
 end
+s = strcat(s, sprintf('\nfloat g = %g;\n',g));
 s
+
+% fd = fopen('biquad_coef.h');
+% fprintf(fd,
