@@ -20,9 +20,9 @@ end
 def = strcat(def, sprintf('\nfloat a_coef[%d][3] = {',length(a(:,1))));
 for n=1:length(a(:,1))
 	if n ~= length(a(:,1))
-		def = strcat(def, sprintf('{%g, %g, %g},\n',b(n,1),b(n,2),b(n,3)));
+		def = strcat(def, sprintf('{%g, %g, %g},\n',a(n,1),a(n,2),a(n,3)));
 	else
-		def = strcat(def, sprintf('{%g, %g, %g}};\n',b(n,1),b(n,2),b(n,3)));
+		def = strcat(def, sprintf('{%g, %g, %g}};\n',a(n,1),a(n,2),a(n,3)));
 	end
 end
 def = strcat(def, sprintf('\nfloat g = %g;\n',g));
