@@ -62,7 +62,7 @@ int main(void)
 
     // Biquad structure initialization
 	BIQUAD_T *f1;
-	f1 = init_biquad(2, g, a, b, nsamp);
+	f1 = init_biquad(5, g, a, b, nsamp);
 
 	// Infinite Loop to process the data stream, "nsamp" samples at a time	
 	while(1){
