@@ -20,6 +20,7 @@ y3 = filter(b3,a3,y2);
 y4 = filter(b4,a4,y3);
 y5 = filter(b5,a5,y4);
 
-Hf = fft(y5./x);
+Hf_in = fft(x);
+Hf_out = fft(y5);
 f = linspace(0,0.5,length(x));
-plot(f,20*log10(abs(Hf)));
+plot(f,20*log10(abs(Hf_out./Hf_in)));
