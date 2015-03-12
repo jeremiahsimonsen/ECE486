@@ -45,7 +45,7 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
 
 ################################################################
 # Rules
-all: $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin $(ARM_BIQUAD_TARGET) $(ARM_BIQUAD_TARGET).bin $(ECE486_BIQUAD_TARGET) $(ECE486_BIQUAD_TARGET).bin
+all: $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin $(ARM_BIQUAD_TARGET) $(ARM_BIQUAD_TARGET).bin $(ECE486_BIQUAD_TARGET) $(ECE486_BIQUAD_TARGET).bin $(TASK4_TARGET) $(TASK4_TARGET).bin
 
 debug : CFLAGS += -DDEBUG -g -Og
 debug : LDFLAGS += -Wl,-Map,$(TARGET).map
@@ -92,6 +92,9 @@ ARM_biquad.o: ece486_biquad.c ece486_biquad.h
 
 ARM_fir.o: ece486_fir.c ece486_fir.h
 	$(CC) -c ece486_fir.c -o ARM_fir.o $(CFLAGS)
+
+biquad_coef.o: biquad_coef.c biquad_coef.h
+	$(CC) -c biquad_coef.c -o biquad_coef.o $(CFLAGS)
 
 
 flash_arm_fir: $(ARM_FIR_TARGET).bin
