@@ -3,12 +3,14 @@ ARM_FIR_TARGET = arm_fir_test
 ECE486_FIR_TARGET = ece486_fir_test
 ARM_BIQUAD_TARGET = arm_biquad_test
 ECE486_BIQUAD_TARGET = ece486_biquad_test
+TASK4_TARGET = ece486_biquad_task4
 
 # Object definitions
 ARM_FIR_OBJS = arm_fir_test.o
 ECE486_FIR_OBJS = ARM_fir.o ece486_fir_test.o
 ARM_BIQUAD_OBJS = arm_biquad_test.o
 ECE486_BIQUAD_OBJS = ARM_biquad.o ece486_biquad_test.o
+TASK4_OBJS = ARM_biquad.o ece486_biquad_task4.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
@@ -77,6 +79,13 @@ $(ECE486_BIQUAD_TARGET): $(ECE486_BIQUAD_OBJS)
 $(ECE486_BIQUAD_TARGET).bin: $(ECE486_BIQUAD_TARGET)
 	$(OBJCOPY) -Obinary $(ECE486_BIQUAD_TARGET) $(ECE486_BIQUAD_TARGET).bin
 
+# Task 4 test program
+$(TASK4_TARGET): $(TASK4_OBJS)
+	$(CC) -o $(TASK4_TARGET) $(CFLAGS) $(LDFLAGS) $(TASK4_OBJS) $(LIBS)
+
+$(TASK4_TARGET).bin: $(TASK4_TARGET)
+	$(OBJCOPY) -Obinary $(TASK4_TARGET) $(TASK4_TARGET).bin
+
 # Dependencies
 ARM_biquad.o: ece486_biquad.c ece486_biquad.h
 	$(CC) -c ece486_biquad.c -o ARM_biquad.o $(CFLAGS)
@@ -97,8 +106,12 @@ flash_arm_biquad: $(ARM_BIQUAD_TARGET).bin
 flash_ece486_biquad: $(ECE486_BIQUAD_TARGET).bin
 	st-flash write $(ECE486_BIQUAD_TARGET).bin 0x08000000
 
+flash_task4: $(TASK4_TARGET).bin
+	st-flash write $(TASK4_TARGET).bin 0x08000000
+
 clean:
 	rm -f $(ARM_FIR_OBJS) $(ARM_FIR_TARGET) $(ARM_FIR_TARGET).bin $(ARM_FIR_TARGET).map;
 	rm -f $(ECE486_FIR_OBJS) $(ECE486_FIR_TARGET) $(ECE486_FIR_TARGET).bin $(ECE486_FIR_TARGET).map;
 	rm -f $(ARM_BIQUAD_OBJS) $(ARM_BIQUAD_TARGET) $(ARM_BIQUAD_TARGET).bin $(ARM_BIQUAD_TARGET).map;
 	rm -f $(ECE486_BIQUAD_OBJS) $(ECE486_BIQUAD_TARGET) $(ECE486_BIQUAD_TARGET).bin $(ECE486_BIQUAD_TARGET).map;
+	rm -f $(TASK4_OBJS) $(TASK4_TARGET) $(TASK4_TARGET).bin $(TASK4_TARGET).map
