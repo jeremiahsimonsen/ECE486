@@ -10,7 +10,7 @@ ARM_FIR_OBJS = arm_fir_test.o
 ECE486_FIR_OBJS = ARM_fir.o ece486_fir_test.o
 ARM_BIQUAD_OBJS = arm_biquad_test.o
 ECE486_BIQUAD_OBJS = ARM_biquad.o ece486_biquad_test.o
-TASK4_OBJS = ARM_biquad.o ece486_biquad_task4.o
+TASK4_OBJS = ARM_biquad.o ece486_biquad_task4.o biquad_coef.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
