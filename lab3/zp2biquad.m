@@ -79,5 +79,8 @@ end
 % Add the gain factor, g, to the output string
 s = strcat(s, sprintf('\nfloat g = %g;\n',g));
 
+% Add the number of biquad stages
+s = strcat(s, sprintf('\nint num_stages = %d;\n',length(b(:,1))));
+
 fprintf(fd,'%s',s);		% Print the string to the file
 fclose(fd);				% Close the file
