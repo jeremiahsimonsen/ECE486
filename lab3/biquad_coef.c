@@ -11,7 +11,7 @@
  *
  * This file contains the definitions of the filter coefficients
  * for external use. The coefficients are the output of the 
- * zp2biquad() function. This implementation allows for the
+ * zp2biquad() MATLAB function. This implementation allows for the
  * testing of new filters simply by re-running the zp2biquad()
  * function and then re-compiling the task 4 test program.
  *

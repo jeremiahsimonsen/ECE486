@@ -9,10 +9,9 @@
  * 
  * @date Mar 10, 2015
  * 
- * This file contains the real-time implementation of a 4th-order, IIR filter
- * using the developed subroutines. 
- * The filter will reject 7.2 kHz and 12 kHz when Fs = 48 kHz; i.e., it rejects
- * f = 0.15 and f = 0.25
+ * This file contains the real-time implementation of the IIR filter designed in Task 2. 
+ * The IIR filter is split into multiple biquad sections, and the coefficients
+ * and gain factor are taken externally from the file "biquad_coefs.c".
  *
  * An input is taken on pin AIN1, the FIR filtered output is sent to pin
  * AOUT1, and the input waveform is copied to AOUT2 for reference
@@ -57,7 +56,7 @@ int main(void)
  	}
 
  	// Filter coefficients
- // 	float b[5][3] = {{1, 2, 1},{1, -2, 1},{1, 0.851559, 1},{1, -1.90211, 1},{1, 1.17557, 1}};
+	// float b[5][3] = {{1, 2, 1},{1, -2, 1},{1, 0.851559, 1},{1, -1.90211, 1},{1, 1.17557, 1}};
 	// float a[5][3] = {{1, 2, 1},{1, -2, 1},{1, 0.851559, 1},{1, -1.90211, 1},{1, 1.17557, 1}};
 	// float g = 0.0264722;
 

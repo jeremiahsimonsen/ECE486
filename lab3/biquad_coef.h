@@ -11,7 +11,7 @@
  * 
  * This file contains the declaration of the filter coefficients that will
  * defined in biquad_coef.c The coefficients will be the output of the 
- * zp2biquad() function. This implementation allows for the implementation
+ * zp2biquad() MATLAB function. This implementation allows for the implementation
  * of a new filter by calling the zp2biquad() function with the new poles
  * and zeros and then re-compiling.
  *

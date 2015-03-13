@@ -14,7 +14,7 @@
  * The filter will reject 7.2 kHz and 12 kHz when Fs = 48 kHz; i.e., it rejects
  * f = 0.15 and f = 0.25
  *
- * An input is taken on pin AIN1, the FIR filtered output is sent to pin
+ * An input is taken on pin AIN1, the IIR filtered output is sent to pin
  * AOUT1, and the input waveform is copied to AOUT2 for reference
  * 
  */
@@ -73,7 +73,7 @@ int main(void)
     	/*
     	 * Ask for a block of ADC samples to be put into the working buffer
     	 *   getblock() will wait until the input buffer is filled...  On return
-    	 *   we work on 	the new data buffer.
+    	 *   we work on the new data buffer.
     	 */
     	getblock(input);	// Wait here until the input buffer is filled... Then process	
     	
@@ -83,7 +83,7 @@ int main(void)
     		output2[i] = input[i];
     	}
     	DIGITAL_IO_SET(); 	// Use a scope on PC4 to measure execution time
-    	// Call the arm provided FIR filter routine
+    	// Call the arm provided IIR filter routine
     	arm_biquad_cascade_df2T_f32(&f1, input, output1, nsamp);
     	// Multiply by the gain factor
     	for(i=0;i<nsamp;i++) {
