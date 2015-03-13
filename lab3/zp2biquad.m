@@ -51,7 +51,7 @@ end
 
 % Now add the necessary include and start of the b_coef 2d array to the
 % output string
-fprintf(fd,'\n#include "biquad_coef.h"\n\nfloat_b_coef[%d][3] = {', ...
+fprintf(fd,'\n#include "biquad_coef.h"\n\nfloat b_coef[%d][3] = {', ...
 	length(b(:,1)));
 s = '';
 % Add all the b coefficients to our output string
