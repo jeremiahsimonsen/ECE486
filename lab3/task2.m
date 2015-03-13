@@ -8,10 +8,8 @@
 
 %% Generate filter coefficients
 pf = [.1 .14 .22 .25 .35];			% pole frequencies
-r = [.93 .62 .6 .89 .98];
-% bw = (0.25 - 0.1)*2*pi;		% bandwidth
-% r = 1 - bw/(2+length(pf));	% radius of poles
-zf = [0 .05 .32 .35 0.5];				% zero frequencies
+r = [.93 .62 .6 .89 .98];			% pole radii/magnitude
+zf = [0 .05 .32 .35 0.5];			% zero frequencies
 p = [r.*exp(1i*2*pi.*pf) r.*exp(-1i*2*pi.*pf)];	% generate actual poles
 z = [1*exp(1i*2*pi.*zf) 1*exp(-1i*2*pi.*zf)];	% generate actual zeros
 a = poly(p);					% denominator polynomial coefficients
