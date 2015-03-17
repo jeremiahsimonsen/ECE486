@@ -7,9 +7,9 @@
 % March 10, 2015
 
 %% Generate filter coefficients
-pf = [.1 .14 .22 .25 .35];			% pole frequencies
-r = [.93 .62 .6 .89 .98];			% pole radii/magnitude
-zf = [0 .05 .32 .35 0.5];			% zero frequencies
+pf = [.2 .25 .3 .36 .4];			% pole frequencies
+r = [.91 .5 .5 .4 .93];			% pole radii/magnitude
+zf = [0 .1 0.48 0.5];			% zero frequencies
 p = [r.*exp(1i*2*pi.*pf) r.*exp(-1i*2*pi.*pf)];	% generate actual poles
 z = [1*exp(1i*2*pi.*zf) 1*exp(-1i*2*pi.*zf)];	% generate actual zeros
 a = poly(p);					% denominator polynomial coefficients
@@ -36,15 +36,15 @@ G1 = num ./ den;
 % 	 (a(1) + a(2)*exp(-1i*2*pi*f) + a(3)*exp(-1i*2*pi*2*f));
 
 % Adjust with a gain factor
-K = 1/max(abs(G1))-.002;
+K = 1/max(abs(G1))-.0078;
 G1 = K .* G1;
 
 %% Generate the transfer function plot
 figure(1); hold on;
 % Patches to verify specifications
-patch([0.1 0.1 0.25 0.25],[-7 -5 0 -2],'g');
-patch([0 0 0.04 0.04],[-45 -40 -40 -45],'r');
-patch([0.32 0.32 0.5 0.5],[-45 -35 -35 -45],'r');
+patch([0.2 0.2 0.4 0.4],[-4 -2 -7 -9],'g');
+patch([0 0 0.1 0.1],[-45 -40 -40 -45],'r');
+patch([0.45 0.45 0.5 0.5],[-45 -40 -40 -45],'r');
 % Plot the filter transfer function
 plot(f,20*log10(abs(G1))); grid on;
 axis([0 0.5 -45 5]);
