@@ -51,7 +51,7 @@ end
 
 % Now add the necessary include and start of the b_coef 2d array to the
 % output string
-fprintf(fd,'\n#include "biquad_coef.h"\n\nfloat_b_coef[%d][3] = {', ...
+fprintf(fd,'\n#include "biquad_coef.h"\n\nfloat b_coef[%d][3] = {', ...
 	length(b(:,1)));
 s = '';
 % Add all the b coefficients to our output string
@@ -78,6 +78,9 @@ for n=1:length(a(:,1))
 end
 % Add the gain factor, g, to the output string
 s = strcat(s, sprintf('\nfloat g = %g;\n',g));
+
+% Add the number of biquad stages
+s = strcat(s, sprintf('\nint num_stages = %d;\n',length(b(:,1))));
 
 fprintf(fd,'%s',s);		% Print the string to the file
 fclose(fd);				% Close the file
