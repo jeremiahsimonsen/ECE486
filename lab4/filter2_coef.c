@@ -17,7 +17,7 @@
  *
  */
 
-#include filter2_coef.h
+#include "filter2_coef.h"
 
 float filter2_b_coef[2][3] = {{1, 1, 0},{1, 1.93369, 1}};
 float filter2_a_coef[2][3] = {{1, -0.528901, 0},{1, -0.727876, 0.637883}};
