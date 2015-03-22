@@ -17,9 +17,9 @@
  *
  */
 
-#include filter1_coef.h
+#include filter2_coef.h
 
-float filter1_b_coef[3][3] = {{1, 0.696317, 1},{1, -1.07606, 1},{1, -1.4074, 1}};
-float filter1_a_coef[3][3] = {{1, -1.7706, 0.797853},{1, -1.7554, 0.868469},{1, -1.76713, 0.956562}};
-float filter1_g = 0.000352401;
-int filter1_num_stages = 3;
+float filter2_b_coef[2][3] = {{1, 1, 0},{1, 1.93369, 1}};
+float filter2_a_coef[2][3] = {{1, -0.528901, 0},{1, -0.727876, 0.637883}};
+float filter2_g = 0.0544912;
+int filter2_num_stages = 2;
