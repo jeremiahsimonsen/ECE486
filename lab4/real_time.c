@@ -30,6 +30,7 @@
 
 // Define the decimation rate...
 #define D1 10
+#define MY_NSAMP 100
 
 
 #include "stm32f4xx_hal.h"
@@ -57,7 +58,9 @@ int main(void)
   /*
    * Local Variable Definitions 
    */
-  /********* Your code here *********/
+  BIQUAD_T *f1, *f2;
+  f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, MY_NSAMP);
+  f2 = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, MY_NSAMP)
   
   
   /*
@@ -87,7 +90,7 @@ int main(void)
   /********* Your code here *********/
 
   /*
-   * Infinite Loop to process the data stream "MY_NASMP" samples at a time
+   * Infinite Loop to process the data stream "MY_NSAMP" samples at a time
    */
   while(1){
     /*
