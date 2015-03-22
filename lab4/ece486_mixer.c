@@ -61,15 +61,53 @@
 #include "ece486_mixer.h"
 
 MIXER_T *init_mixer(float *mixer_coefs, int n_coef, int blocksize){
-    /*******  ECE486 STUDENTS MODIFY THIS *******/
+
+    //Allocate the mixer structure
+    MIXER_T *s;
+    s = (MIXER_T *) malloc(sizeof(MIXER_T));
+    if (s == NULL) return NULL;
+
+    //Initialize the structure
+    s->blockize = blocksize;
+    s->n_coef = n_coef;
+    s->c = mixer_coefs;
+    s->m_index = 0;
+
+    return s;
+
 }
 
-void calc_mixer( MIXER_T *s, float *x, float *y ){
-    /*******  ECE486 STUDENTS MODIFY THIS *******/
+void calc_mixer(MIXER_T *s, float *x, float *y){
+
+    int i;
+
+    for(i=0;i<s->blocksize;i++){
+
+        //Calculate the output and update the index
+        y[i] = x[i]*(s->c[s->m_index]);
+        s->m_index++;
+
+        //Circle back to the beginning of the coefficient array
+        if(s->m_index == s->n_coef){
+            s->m_index = 0;
+        }
+
+    }
+
 }
 
 void destroy_mixer(MIXER_T *s){
+
     /*******  ECE486 STUDENTS MODIFY THIS *******/
+
+    //Free the pointer to the mixer coefficients
+    free(s->c);
+    s->c = NULL;
+
+    //Free the mixer structure
+    free(s);
+    s = NULL;
+
 }
 
 

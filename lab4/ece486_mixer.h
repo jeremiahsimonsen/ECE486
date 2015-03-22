@@ -63,4 +63,17 @@
 
  /*******  ECE486 STUDENTS MODIFY THIS *******/
 
+ typedef struct mixer_struct {
+
+	 	float *c;
+	 	int n_coef;
+	 	int blocksize;
+	 	int m_index;
+
+} MIXER_T;
+
+MIXER_T *init_mixer(float *mixer_coefs, int n_coef, int blocksize);
+void calc_mixer( MIXER_T *s, float *x, float *y);
+void destroy_mixer(MIXER_T *s);
+
 #endif
