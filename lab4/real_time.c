@@ -32,11 +32,25 @@
 #define D1 10
 
 
-/*
- * Includes, Defines, Globals, Static
- * (Filter coef's etc.)
- */
-  /********* Your code here *********/
+#include "stm32f4xx_hal.h"
+
+#ifdef STM32F407xx
+#include "stm32f4_discovery.h"
+#endif /* STM32F407xx */
+
+#ifdef STM32F429xx
+#include "stm32f429i_discovery.h"
+#include "stm32f429i_discovery_lcd.h"
+#endif /* STM32F429xx */
+
+#include "ece486.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include "arm_math.h"
+
+#include "ece486_fir.h"
+#include "ece486_biquad.h"
 
 int main(void)
 {
