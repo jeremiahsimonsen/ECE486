@@ -65,10 +65,10 @@
 
  typedef struct mixer_struct {
 
-	 	float *c;
-	 	int n_coef;
-	 	int blocksize;
-	 	int m_index;
+	 float *c;
+	 int n_coef;
+	 int blocksize;
+	 int m_index;
 
 } MIXER_T;
 
