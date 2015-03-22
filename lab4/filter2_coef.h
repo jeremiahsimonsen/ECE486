@@ -20,7 +20,12 @@
  * 
  */
 
+#ifndef FILTER2_COEF_H
+#define FILTER2_COEF_H
+
 extern float filter2_a_coef[][3];
 extern float filter2_b_coef[][3];
 extern float filter2_g;
 extern int filter2_num_stages;
+
+#endif

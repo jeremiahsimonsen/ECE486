@@ -1,5 +1,31 @@
-/*
- * Pseudo-code template for ECE-486 Lab 4
+/*!
+ * @file
+ * 
+ * @brief ECE 486 Spring 2015 Lab 4 Real-time implementation of an FSK detector
+ * 
+ * @author ECE486 Lab Group 2
+ * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
+ * 
+ * @date Mar 22, 2015
+ * 
+ * This file contains the real-time implementation of an FSK detector for a 
+ * Bell 202 half-duplex modem. A 1200 Hz tone denotes a binary 1 and a 2200 Hz
+ * tone denotes a binary 0. Binary data is transmitted at 1200 bits/second. The
+ * detector in this lab would be combined with a UART to form the core of the 
+ * Bell 202 Modem.
+ *
+ * An input on pin AIN1 is sampled at 48 ksps. The signal is lowpass filtered
+ * to extract the data signal, which is bandwidth limited to 3.4 kHz. Audio 
+ * tones above 3.4 kHz are rejected. The signal is passed through a second
+ * to reject any impulses at DC caused by the signal not be centered at 1.5 V.
+ * The sample sequence is decimated, effectively reducing the sample rate by a
+ * factor of 5, to 9.6 ksps. The signal is mixed with a complex exponential 
+ * (frequency of 1700 Hz - halfway between "0" and "1"), shifting the spectrum
+ * down by 1.7/9.6 cycles/sample. The signal is lowpass filtered again to
+ * reject duplicate bands. The frequency of the signal is then estimated and
+ * a voltage proportional to the distance from the center frequency is output
+ * to pin AOUT1
+ * 
  */
 
 // Define the decimation rate...
