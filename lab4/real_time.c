@@ -53,96 +53,117 @@
 #include "ece486_fir.h"
 #include "ece486_biquad.h"
 
+#include "filter1_coef.h"
+#include "filter2_coef.h"
+
 int main(void)
 {
-  /*
-   * Local Variable Definitions 
-   */
-  BIQUAD_T *f1, *f2;
-  f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, MY_NSAMP);
-  f2 = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, MY_NSAMP)
-  
-  
-  /*
-   * Optional: set the ADC/DAC Block Size to anything down to one sample
-   * (Omitting this call uses the default block size of 100 samples per data block)
-   * The code below assumes that MY_NSAMP is a multiple of D1... otherwise, 
-   * you'll have to modify the decimation code to avoid discontinuities between 
-   * blocks of input data.
-   */
-  setblocksize( MY_NSAMP );
+	// Filter initializations
+	BIQUAD_T *f1, *f2;
+	f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, MY_NSAMP);
+	f2 = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, MY_NSAMP);
 
-  /* 
-   * Set up the required 50 ksps sample rate... Use the ADC to measure 
-   * a function generator or a microphone input
-   */
-  initialize(FS_48K, MONO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
-  
-  /*
-   * Get the actual sampling frequncy 
-   * (It can be slightly different from the requested value)
-   */
-  fs = getsamplingfrequency();
-  
-  /*
-   * Allocate Required Memory, initialize filters, mixers, etc.
-   */
-  /********* Your code here *********/
+	// Other variables
+	int i,j;
+	float fs;
+	float *input, *output1, *output2;
+	input = (float *)malloc(sizeof(float)*MY_NSAMP);
+ 	output1 = (float *)malloc(sizeof(float)*MY_NSAMP);
+ 	output2 = (float *)malloc(sizeof(float)*MY_NSAMP);
+ 	float *stage1_output, *stage2_input, *stage2_output_re, *stage2_output_im;
+ 	stage1_output = (float *)malloc(sizeof(float)*MY_NSAMP);
+ 	stage2_input = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
+ 	stage2_output_re = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
+ 	stage2_output_im = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
 
-  /*
-   * Infinite Loop to process the data stream "MY_NSAMP" samples at a time
-   */
-  while(1){
-    /*
-     * Ask for a block of ADC samples to be put into the working buffer
-     *   getblock() will wait until the input buffer is filled...  On return
-     *   we work on the new data buffer.
-     */
-    getblock(input);	// Wait here until the input buffer is filled... 
+	/*
+	 * Optional: set the ADC/DAC Block Size to anything down to one sample
+	 * (Omitting this call uses the default block size of 100 samples per data
+	 * block)
+	 * The code below assumes that MY_NSAMP is a multiple of D1... otherwise, 
+	 * you'll have to modify the decimation code to avoid discontinuities
+	 * between 
+	 * blocks of input data.
+	 */
+	setblocksize( MY_NSAMP );
+
+	/* 
+	 * Set up the required 50 ksps sample rate... Use the ADC to measure 
+	 * a function generator or a microphone input
+	 */
+	initialize(FS_48K, MONO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
+  
+	/*
+	 * Get the actual sampling frequncy 
+	 * (It can be slightly different from the requested value)
+	 */
+	fs = getsamplingfrequency();
+  
+	/*
+	 * Allocate Required Memory, initialize filters, mixers, etc.
+	 */
+	/********* Your code here *********/
+
+	/*
+	 * Infinite Loop to process the data stream "MY_NSAMP" samples at a time
+	 */
+	while(1){
+		/*
+		 * Ask for a block of ADC samples to be put into the working buffer
+		 *   getblock() will wait until the input buffer is filled...  On return
+		 *   we work on the new data buffer.
+		 */
+		getblock(input);	// Wait here until the input buffer is filled... 
     
-    /*
-     * Stage 1:  Complete processing at the incoming sample frequency fs.
-     *           (Array size MY_NSAMP samples)
-     */
-    /********* Your code here *********/
+    	/*
+    	 * Stage 1:  Complete processing at the incoming sample frequency fs.
+    	 *           (Array size MY_NSAMP samples)
+    	 */
+		DIGITAL_IO_SET();
+		calc_biquad(f1,input,stage1_output);
+		//TODO add filter to reject DC
+
+    	/* 
+    	 * Decimate by D1
+    	 */
+    	for (i=0; i<MY_NSAMP/D1; i++) 
+    		stage2_input[i] = stage1_output[i*D1];
     
-    /* 
-     * Decimate by D1
-     */
-    for (i=0; i<MY_NSAMP/D1; i++) 
-      stage2_input[i] = stage1_output[i*D1];
-    
-    /*
-     * Stage 2:  Complete processing at the intermediate sample rate fs/D1.
-     *           (Array size MY_NSAMP/D1 samples)
-     */
-    /********* Your code here *********/
+    	/*
+    	 * Stage 2:  Complete processing at the intermediate sample rate fs/D1.
+    	 *           (Array size MY_NSAMP/D1 samples)
+    	 */
+    	//TODO mix signals
+    	//TODO calc_biquad real
+    	//TODO calc_biquad imag
     
     
     
-    /* 
-     * Write output values to the DAC....  NOTE: Be sure to set the output
-     * array to values for every INPUT sample (not just samples at the decimated 
-     * rates!
-     */
-    for (i=0; i<MY_NSAMP/D1; i++) {
-      // Every stage-3 output should be written to D1 output samples!
-      for (j=0; j<D1; j++) {
-	output1[i*D1+j] = stage2_output_re[i];
-	output2[i*D1+j] = stage2_output_im[i];
-      }
-    }
+    	/* 
+    	 * Write output values to the DAC....  NOTE: Be sure to set the output
+    	 * array to values for every INPUT sample (not just samples at the decimated 
+    	* rates!
+    	*/
+    	for (i=0; i<MY_NSAMP/D1; i++) {
+    	  	// Every stage-3 output should be written to D1 output samples!
+    	  	for (j=0; j<D1; j++) {
+				output1[i*D1+j] = stage2_output_re[i];
+				output2[i*D1+j] = stage2_output_im[i];
+    		}
+    	}
     
-    /*
-     * pass the (length MY_NSAMP) calculated buffers back for DAC output
-     */
-    putblockstereo(output1, output2);
+    	DIGITAL_IO_RESET();
+
+    	/*
+    	 * pass the (length MY_NSAMP) calculated buffers back for DAC output
+    	 */
+    	putblockstereo(output1, output2);
     
-    /*
-     * Other processing performed once per input block...
-     * (Watch for button presses?  Decide which LEDs should be lit?
-     */
-    /********* Your code here *********/
+    	/*
+    	 * Other processing performed once per input block...
+    	 * (Watch for button presses?  Decide which LEDs should be lit?
+    	 */
+    	/********* Your code here *********/
       
   }
 }
