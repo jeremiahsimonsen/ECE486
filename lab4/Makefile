@@ -47,6 +47,9 @@ debug : all
 $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LIBS)
 
+$(TARGET).bin: $(TARGET)
+	$(OBJCOPY) -Obinary $(TARGET) $(TARGET).bin
+
 # Dependencies
 ARM_biquad.o: ece486_biquad.c ece486_biquad.h
 	$(CC) -c ece486_biquad.c -o ARM_biquad.o $(CFLAGS)
