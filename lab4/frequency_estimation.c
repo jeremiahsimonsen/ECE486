@@ -13,24 +13,47 @@ The delta-f values should be either deltaf = +- .0521
 
 #define PI 3.141592653589
 
+#include <stdlib.h>
+
 #include "frequency_estimation.h"
+#include "arm_math.h"
 
 
+/**
+ * @brief [brief description]
+ * @details [long description]
+ * 
+ * @param a [description]
+ * @param b [description]
+ * @param length [description]
+ * @return [description]
+ */
+float *delta_f(float *y_re, float *y_im, int blocksize) {
+	// Store last value of complex a(n) for continuity between sample blocks
+	static float last_a_re = 0.0, last_a_im = 0.0;
 
-int frequency_estimation(int *a, int *b, int length) {
-
+	float *df = (float *)malloc(sizeof(float)*blocksize);
+	float mag = 0.0;
 	int n;
-	for(n = 0; n < length; n++) {
-		// A(n) = real cos 	B(n) = imaginary sin
-		// divide by magnitude which is sqrt(y(Re) * y(Re) + y(Im) * y (Im))
-		a(n) = a(n) / sqrt((a(n)^2 + b(n)^2));
-		b(n) = b(n) / sqrt((a(n)^2 + b(n)^2));
 
-		// a(n) * a^*(n - 1)
-		im = b(n) * a(n - 1) - a(n) * b(n - 1);
-		deltaf = im / (2 * PI); 
-		// deltaf = +- .0521  (+- 500Hz / 9.6ksps)
-		return deltaf;
+	for(n = 0; n < blocksize; n++) {
+		// Calculate complex a(n) by normalizing y(n)
+		mag = sqrtf(y_re[n]*y_re[n] + y_im[n]*y_im[n]);
+		y_re[n] = y_re[n] / mag;
+		y_im[n] = y_im[n] / mag;
+
+		// Calculate complex b(n) = a(n)a*(n-1)
+		// b_re(n) = a_re(n)a_re(n-1) + a_im(n)a_im(n-1); not needed
+		// b_im(n) = -a_re(n)a_im(n-1) + a_im(n)a_re(n-1)
+		if (n == 0) {
+			df[n] = -y_re[n]*last_a_im + y_im[n]*last_a_re;
+		} else {
+			df[n] = -y_re[n]*y_im[n-1] + y_im[n]*y_re[n-1];
+		}		
+
+		// Calculate delta-f 
+		// for the FSK detector, delta-f should be +- 0.0521 (+- 500 / 9.6k)
+		df[n] = df[n] / (2 * PI);
 
 	// 	high_margin_deltaf = deltaf + (deltaf * 0.05);
 	// 	low_margin_deltaf = deltaf - (deltaf * 0.05);
@@ -45,8 +68,11 @@ int frequency_estimation(int *a, int *b, int length) {
 
 	}
 
+	// Update last values
+	last_a_re = y_re[blocksize-1];
+	last_a_im = y_im[blocksize-1];
 
-
+	return df;
 
 }
 
