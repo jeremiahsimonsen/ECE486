@@ -67,7 +67,7 @@ frequency_estimation.o: frequency_estimation.c frequency_estimation.h
 	$(CC) -c frequency_estimation.c -o frequency_estimation.o $(CFLAGS)
 
 flash: $(TARGET).bin
-	st-flash write $(TARGET).bin 0x0
+	st-flash write $(TARGET).bin 0x08000000
 
 clean:
 	rm -f $(OBJS) $(TARGET) $(TARGET).bin $(TARGET).map;

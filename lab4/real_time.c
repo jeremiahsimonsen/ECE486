@@ -120,14 +120,20 @@ int main(void)
     	 *           (Array size MY_NSAMP samples)
     	 */
 		DIGITAL_IO_SET();
-		calc_biquad(f1,input,stage1_output);
+		// copy input to output1
+		for(i=0;i<MY_NSAMP;i++) {
+    		output1[i] = input[i];
+    	}
+
+		// calc_biquad(f1,input,stage1_output);
+		calc_biquad(f1,input,output2);
 		//TODO add filter to reject DC
 
     	/* 
     	 * Decimate by D1
     	 */
-    	for (i=0; i<MY_NSAMP/D1; i++) 
-    		stage2_input[i] = stage1_output[i*D1];
+    	// for (i=0; i<MY_NSAMP/D1; i++) 
+    	// 	stage2_input[i] = stage1_output[i*D1];
     
     	/*
     	 * Stage 2:  Complete processing at the intermediate sample rate fs/D1.
@@ -144,13 +150,13 @@ int main(void)
     	 * array to values for every INPUT sample (not just samples at the decimated 
     	* rates!
     	*/
-    	for (i=0; i<MY_NSAMP/D1; i++) {
-    	  	// Every stage-3 output should be written to D1 output samples!
-    	  	for (j=0; j<D1; j++) {
-				output1[i*D1+j] = stage2_output_re[i];
-				output2[i*D1+j] = stage2_output_im[i];
-    		}
-    	}
+    // 	for (i=0; i<MY_NSAMP/D1; i++) {
+    // 	  	// Every stage-3 output should be written to D1 output samples!
+    // 	  	for (j=0; j<D1; j++) {
+				// output1[i*D1+j] = stage2_output_re[i];
+				// output2[i*D1+j] = stage2_output_im[i];
+    // 		}
+    // 	}
     
     	DIGITAL_IO_RESET();
 
