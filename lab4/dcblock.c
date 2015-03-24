@@ -19,7 +19,7 @@
 
 #include "dcblock.h"
 
-float dcblock_b_coef[2][3] = {{1, -1.99999, 1},{1, -1.99993, 1}};
-float dcblock_a_coef[2][3] = {{1, -1.90612, 0.911249},{1, -1.98771, 0.989263}};
-float dcblock_g = 0.84568;
+float dcblock_b_coef[2][3] = {{1, -1.99999, 1},{1, -1.99994, 1}};
+float dcblock_a_coef[2][3] = {{1, -1.90826, 0.912301},{1, -1.986, 0.987446}};
+float dcblock_g = 0.895743;
 int dcblock_num_stages = 2;
