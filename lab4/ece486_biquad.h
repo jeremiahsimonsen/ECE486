@@ -1,7 +1,7 @@
 /*!
  * @file
  * 
- * @brief ECE 486 Spring 2015 Lab 2 IIR header file
+ * @brief ECE 486 Spring 2015 IIR header file
  * 
  * @author ECE486 Lab Group 2
  * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
