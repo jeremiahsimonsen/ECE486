@@ -36,8 +36,8 @@ G1 = num ./ den;
 % 	 (a(1) + a(2)*exp(-1i*2*pi*f) + a(3)*exp(-1i*2*pi*2*f));
 
 % Adjust with a gain factor
-K = 1/max(abs(G1));
-G1 = K .* G1;
+% K = 1/max(abs(G1));
+% G1 = K .* G1;
 
 %% Generate the transfer function plot
 figure(1); hold on;
