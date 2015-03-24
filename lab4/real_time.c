@@ -110,10 +110,10 @@ int main(void)
  	// Filter initializations
 	BIQUAD_T *f1;
 	// BIQUAD_T *f2;
-	BIQUAD_T *dcblocker;
+	// BIQUAD_T *dcblocker;
 	f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, nsamp);
 	// f2 = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, MY_NSAMP);
-	dcblocker = init_biquad(dcblock_num_stages, dcblock_g, dcblock_a_coef, dcblock_b_coef, nsamp);
+	// dcblocker = init_biquad(dcblock_num_stages, dcblock_g, dcblock_a_coef, dcblock_b_coef, nsamp);
 
 	// DC blocker initialization
 	// DCBLOCK_T *dcblocker;
@@ -152,10 +152,10 @@ int main(void)
     	}
 
     	// Block DC
-    	calc_biquad(dcblocker,input,output1);
+    	// calc_biquad(dcblocker,input,output1);
 
 		// calc_biquad(f1,input,stage1_output);
-		calc_biquad(f1,output1,input);
+		calc_biquad(f1,input,output1);
 		
 
     	// Decimate by D1
@@ -194,7 +194,7 @@ int main(void)
     	/*
     	 * pass the (length MY_NSAMP) calculated buffers back for DAC output
     	 */
-    	putblockstereo(input, output2);
+    	putblockstereo(output1, output2);
     
     	/*
     	 * Other processing performed once per input block...
