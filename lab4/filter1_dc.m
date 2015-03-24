@@ -32,7 +32,7 @@ g = prod(Hd.ScaleValues);
 Hd = dfilt.df2(b, a);
 a = Hd.Denominator; b = Hd.Numerator;
 z = roots(b); p = roots(a);
-zp2biquad(z,p,g,'filter1_coef.c');
+zp2biquad(z,p,0.9986,'filter1_coef.c');
 
 
 % [EOF]

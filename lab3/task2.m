@@ -42,9 +42,9 @@ G1 = K .* G1;
 %% Generate the transfer function plot
 figure(1); hold on;
 % Patches to verify specifications
-patch([0.1 0.1 0.25 0.25],[-7 -5 0 -2],'g');
-patch([0 0 0.04 0.04],[-45 -40 -40 -45],'r');
-patch([0.32 0.32 0.5 0.5],[-45 -35 -35 -45],'r');
+% patch([0.1 0.1 0.25 0.25],[-7 -5 0 -2],'g');
+% patch([0 0 0.04 0.04],[-45 -40 -40 -45],'r');
+% patch([0.32 0.32 0.5 0.5],[-45 -35 -35 -45],'r');
 % Plot the filter transfer function
 plot(f,20*log10(abs(G1))); grid on;
 axis([0 0.5 -45 5]);
