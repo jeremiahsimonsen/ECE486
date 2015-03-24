@@ -26,7 +26,7 @@ g = prod(Hd.ScaleValues);
 
 % Convert to a singleton filter.
 Hd = dfilt.df2(b, a);
-% a = Hd.Denominator; b = Hd.Numerator;
+a = Hd.Denominator; b = Hd.Numerator;
 z = roots(b); p = roots(a);
 zp2biquad(z,p,g,'dcblock.c');
 
