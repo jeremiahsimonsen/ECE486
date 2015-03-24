@@ -31,8 +31,28 @@ g = prod(Hd.ScaleValues);
 % Convert to a singleton filter.
 Hd = dfilt.df2(b, a);
 a = Hd.Denominator; b = Hd.Numerator;
+f = 0:.001:.5;				% Frequency span
+num = zeros(1,length(f));	% Numerator - to be evaluated at each f
+den = zeros(1,length(f));	% Denominator - to be evaluated at each f
+% Calculate denominator
+for k=1:length(a)
+	den = den + a(k)*exp(-1i*2*pi*(k-1).*f);
+end
+% Calculate numerator
+for k=1:length(b)
+	num = num + b(k)*exp(-1i*2*pi*(k-1).*f);
+end
+G1 = num ./ den;
+
+% For reference, 2nd order looks like:
+% G1 = (b(1) + b(2)*exp(-1i*2*pi*f) + b(3)*exp(-1i*2*pi*2*f))./ ...
+% 	 (a(1) + a(2)*exp(-1i*2*pi*f) + a(3)*exp(-1i*2*pi*2*f));
+
+% Adjust with a gain factor
+K = 1/max(abs(G1));
+G1 = K .* G1;
 z = roots(b); p = roots(a);
-zp2biquad(z,p,g,'filter1_coef.c');
+zp2biquad(z,p,K,'filter1_coef.c');
 
 
 
