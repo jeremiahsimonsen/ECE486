@@ -19,7 +19,7 @@
 
 #include "filter1_coef.h"
 
-float filter1_b_coef[2][3] = {{1, -1.99999, 1},{1, -1.99993, 1}};
-float filter1_a_coef[2][3] = {{1, -1.90612, 0.911249},{1, -1.98771, 0.989263}};
-float filter1_g = 0.84568;
-int filter1_num_stages = 2;
+float filter1_b_coef[3][3] = {{1, 0.696317, 1},{1, -1.07606, 1},{1, -1.4074, 1}};
+float filter1_a_coef[3][3] = {{1, -1.7706, 0.797853},{1, -1.7554, 0.868469},{1, -1.76713, 0.956562}};
+float filter1_g = 0.000352401;
+int filter1_num_stages = 3;
