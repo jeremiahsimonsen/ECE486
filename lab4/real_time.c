@@ -58,6 +58,7 @@
 #include "dcblock.h"
 #include "rejectDC.h"
 #include "frequency_estimation.h"
+#include "ece486_mixer.h"
 
 int main(void)
 {
@@ -81,43 +82,143 @@ int main(void)
 	nsamp = getblocksize();
 
 	// Other variables
-	int i;//,j;
+	int i,j;
 	// float fs;
 	float *input, *output1, *output2;
 	input = (float *)malloc(sizeof(float)*nsamp);
  	output1 = (float *)malloc(sizeof(float)*nsamp);
  	output2 = (float *)malloc(sizeof(float)*nsamp);
- 	// float *stage1_output, *stage2_input, *stage2_output_re, *stage2_output_im;
- 	// stage1_output = (float *)malloc(sizeof(float)*MY_NSAMP);
- 	// float *stage2_input, *buffer;
- 	// stage2_input = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
- 	// buffer = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
- 	// stage2_output_re = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
- 	// stage2_output_im = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
-
- 	// if (input==NULL || output1==NULL || output2==NULL ||
- 	// 	stage1_output==NULL || stage2_input==NULL || stage2_output_re==NULL
- 	// 	|| stage2_output_im==NULL) {
- 	// 	flagerror(MEMORY_ALLOCATION_ERROR);
- 	// 	while(1);
- 	// }
+ 	float *buffer = (float *)malloc(sizeof(float)*nsamp/D1);
+ 	float *w_re = (float *)malloc(sizeof(float)*nsamp/D1);
+ 	float *w_im = (float *)malloc(sizeof(float)*nsamp/D1);
+ 	
 
  	if (input==NULL || output1==NULL || output2==NULL) {
+ 		flagerror(MEMORY_ALLOCATION_ERROR);
+ 		while(1);
+ 	}
+
+ 	if (buffer==NULL || w_re==NULL || w_im==NULL) {
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
  	}
   
  	// Filter initializations
 	BIQUAD_T *f1;
-	// BIQUAD_T *f2;
+	BIQUAD_T *f2_re, *f2_im;
 	// BIQUAD_T *dcblocker;
 	f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, nsamp);
-	// f2 = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, MY_NSAMP);
+	f2_re = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp);
+	f2_im = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp);
 	// dcblocker = init_biquad(dcblock_num_stages, dcblock_g, dcblock_a_coef, dcblock_b_coef, nsamp);
 
 	// DC blocker initialization
 	// DCBLOCK_T *dcblocker;
-	// dcblocker = init_dcblock(MY_NSAMP/D1);
+	// dcblocker = init_dcblock(nsamp/D1);
+
+	// Initialize the mixer
+	float mixer_coefs[96] = {
+						1.0000,
+						0.4423,
+					   -0.6088,
+					   -0.9808,
+					   -0.2588,
+						0.7518,
+						0.9239,
+						0.0654,
+					   -0.8660,
+					   -0.8315,
+						0.1305,
+						0.9469,
+						0.7071,
+					   -0.3214,
+					   -0.9914,
+					   -0.5556,
+						0.5000,
+						0.9979,
+						0.3827,
+					   -0.6593,
+					   -0.9659,
+					   -0.1951,
+						0.7934,
+						0.8969,
+						0.0000,
+					   -0.8969,
+					   -0.7934,
+						0.1951,
+						0.9659,
+						0.6593,
+					   -0.3827,
+					   -0.9979,
+					   -0.5000,
+						0.5556,
+						0.9914,
+						0.3214,
+					   -0.7071,
+					   -0.9469,
+					   -0.1305,
+						0.8315,
+						0.8660,
+					   -0.0654,
+					   -0.9239,
+					   -0.7518,
+						0.2588,
+						0.9808,
+						0.6088,
+					   -0.4423,
+					   -1.0000,
+					   -0.4423,
+						0.6088,
+						0.9808,
+						0.2588,
+					   -0.7518,
+					   -0.9239,
+					   -0.0654,
+						0.8660,
+						0.8315,
+					   -0.1305,
+					   -0.9469,
+					   -0.7071,
+						0.3214,
+						0.9914,
+						0.5556,
+					   -0.5000,
+					   -0.9979,
+					   -0.3827,
+						0.6593,
+						0.9659,
+						0.1951,
+					   -0.7934,
+					   -0.8969,
+					   -0.0000,
+						0.8969,
+						0.7934,
+					   -0.1951,
+					   -0.9659,
+					   -0.6593,
+						0.3827,
+						0.9979,
+						0.5000,
+					   -0.5556,
+					   -0.9914,
+					   -0.3214,
+						0.7071,
+						0.9469,
+						0.1305,
+					   -0.8315,
+					   -0.8660,
+						0.0654,
+						0.9239,
+						0.7518,
+					   -0.2588,
+					   -0.9808,
+					   -0.6088,
+						0.4423
+						};
+	int n_coef = 96;
+	MIXER_T *cosine_mix = init_mixer(mixer_coefs, n_coef, nsamp);
+	MIXER_T *sine_mix = init_mixer(mixer_coefs, n_coef, nsamp);
+	sine_mix->m_index += 24;		// phase shift
 
 	/*
 	 * Get the actual sampling frequncy 
@@ -147,20 +248,20 @@ int main(void)
     	 */
 		DIGITAL_IO_SET();
 		// copy input to output1
-		for(i=0;i<nsamp;i++) {
-    		output2[i] = input[i];
-    	}
+		// for(i=0;i<nsamp;i++) {
+  //   		output2[i] = input[i];
+  //   	}
 
     	// Block DC
     	// calc_biquad(dcblocker,input,input);
 
 		// calc_biquad(f1,input,stage1_output);
-		calc_biquad(f1,input,output1);
+		calc_biquad(f1,input,input);
 		
 
     	// Decimate by D1
-    	// for (i=0; i<MY_NSAMP/D1; i++) 
-    	// 	buffer[i] = input[i*D1];
+    	for (i=0; i<MY_NSAMP/D1; i++) 
+    		buffer[i] = input[i*D1];
     
     	// Reject DC
     	// calc_dcblock(dcblocker, buffer, stage2_input);
@@ -169,9 +270,19 @@ int main(void)
     	 * Stage 2:  Complete processing at the intermediate sample rate fs/D1.
     	 *           (Array size MY_NSAMP/D1 samples)
     	 */
-    	//TODO mix signals
-    	//TODO calc_biquad real
-    	//TODO calc_biquad imag
+
+    	// Mix signals
+    	calc_mixer(cosine_mix,buffer,w_re);
+    	calc_mixer(sine_mix,buffer,w_im);
+
+
+		// Lowpass filter
+    	calc_biquad(f2_re,w_re,w_re);
+    	calc_biquad(f2_im,w_im,w_im);
+
+
+    	// TODO Frequency Estimation
+
     
     
     
@@ -180,14 +291,14 @@ int main(void)
     	 * array to values for every INPUT sample (not just samples at the decimated 
     	* rates!
     	*/
-    // 	for (i=0; i<MY_NSAMP/D1; i++) {
-    // 	  	// Every stage-3 output should be written to D1 output samples!
-    // 	  	for (j=0; j<D1; j++) {
-				// // output1[i*D1+j] = stage2_output_re[i];
-				// // output2[i*D1+j] = stage2_output_im[i];
+    	for (i=0; i<MY_NSAMP/D1; i++) {
+    	  	// Every stage-3 output should be written to D1 output samples!
+    	  	for (j=0; j<D1; j++) {
+				output1[i*D1+j] = w_re[i];
+				output2[i*D1+j] = w_im[i];
 				// output1[i*D1+j] = stage2_input[i];
-    // 		}
-    // 	}
+    		}
+    	}
     
     	DIGITAL_IO_RESET();
 
