@@ -7,13 +7,13 @@
 % March 10, 2015
 
 %% Generate filter coefficients
-pf = [.1 .14 .22 .25 .35];			% pole frequencies
-r = [.93 .62 .6 .89 .98];			% pole radii/magnitude
-zf = [0 .05 .32 .35 0.5];			% zero frequencies
-p = [r.*exp(1i*2*pi.*pf) r.*exp(-1i*2*pi.*pf)];	% generate actual poles
-z = [1*exp(1i*2*pi.*zf) 1*exp(-1i*2*pi.*zf)];	% generate actual zeros
-a = poly(p);					% denominator polynomial coefficients
-b = poly(z);					% numerator polynomial coefficients
+% pf = [.1 .14 .22 .25 .35];			% pole frequencies
+% r = [.93 .62 .6 .89 .98];			% pole radii/magnitude
+% zf = [0 .05 .32 .35 0.5];			% zero frequencies
+% p = [r.*exp(1i*2*pi.*pf) r.*exp(-1i*2*pi.*pf)];	% generate actual poles
+% z = [1*exp(1i*2*pi.*zf) 1*exp(-1i*2*pi.*zf)];	% generate actual zeros
+% a = poly(p);					% denominator polynomial coefficients
+% b = poly(z);					% numerator polynomial coefficients
 
 %% Evaluate the transfer function
 % Using loops allows for any number of poles and zeros in the calculation.
@@ -36,7 +36,7 @@ G1 = num ./ den;
 % 	 (a(1) + a(2)*exp(-1i*2*pi*f) + a(3)*exp(-1i*2*pi*2*f));
 
 % Adjust with a gain factor
-K = 1/max(abs(G1))-.002;
+K = 1/max(abs(G1));
 G1 = K .* G1;
 
 %% Generate the transfer function plot

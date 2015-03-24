@@ -109,8 +109,8 @@ int main(void)
 	// f2 = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, MY_NSAMP);
 
 	// DC blocker initialization
-	DCBLOCK_T *dcblocker;
-	dcblocker = init_dcblock(MY_NSAMP);
+	// DCBLOCK_T *dcblocker;
+	// dcblocker = init_dcblock(MY_NSAMP/D1);
 
 	/*
 	 * Get the actual sampling frequncy 
@@ -145,15 +145,15 @@ int main(void)
     	}
 
 		// calc_biquad(f1,input,stage1_output);
-		// calc_biquad(f1,input,output1);
+		calc_biquad(f1,input,output1);
 		
 
     	// Decimate by D1
-    	for (i=0; i<MY_NSAMP/D1; i++) 
-    		buffer[i] = input[i*D1];
+    	// for (i=0; i<MY_NSAMP/D1; i++) 
+    	// 	buffer[i] = input[i*D1];
     
     	// Reject DC
-    	calc_dcblock(dcblocker, buffer, stage2_input);
+    	// calc_dcblock(dcblocker, buffer, stage2_input);
 
     	/*
     	 * Stage 2:  Complete processing at the intermediate sample rate fs/D1.
@@ -170,14 +170,14 @@ int main(void)
     	 * array to values for every INPUT sample (not just samples at the decimated 
     	* rates!
     	*/
-    	for (i=0; i<MY_NSAMP/D1; i++) {
-    	  	// Every stage-3 output should be written to D1 output samples!
-    	  	for (j=0; j<D1; j++) {
-				// output1[i*D1+j] = stage2_output_re[i];
-				// output2[i*D1+j] = stage2_output_im[i];
-				output1[i*D1+j] = stage2_input[i];
-    		}
-    	}
+    // 	for (i=0; i<MY_NSAMP/D1; i++) {
+    // 	  	// Every stage-3 output should be written to D1 output samples!
+    // 	  	for (j=0; j<D1; j++) {
+				// // output1[i*D1+j] = stage2_output_re[i];
+				// // output2[i*D1+j] = stage2_output_im[i];
+				// output1[i*D1+j] = stage2_input[i];
+    // 		}
+    // 	}
     
     	DIGITAL_IO_RESET();
 
