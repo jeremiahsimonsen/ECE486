@@ -77,7 +77,7 @@ int main(void)
 	initialize(FS_48K, MONO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
 
 	// Other variables
-	int i,j;
+	int i;//,j;
 	// float fs;
 	float *input, *output1, *output2;
 	input = (float *)malloc(sizeof(float)*MY_NSAMP);
@@ -85,9 +85,9 @@ int main(void)
  	output2 = (float *)malloc(sizeof(float)*MY_NSAMP);
  	// float *stage1_output, *stage2_input, *stage2_output_re, *stage2_output_im;
  	// stage1_output = (float *)malloc(sizeof(float)*MY_NSAMP);
- 	float *stage2_input, *buffer;
- 	stage2_input = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
- 	buffer = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
+ 	// float *stage2_input, *buffer;
+ 	// stage2_input = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
+ 	// buffer = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
  	// stage2_output_re = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
  	// stage2_output_im = (float *)malloc(sizeof(float)*MY_NSAMP/D1);
 
