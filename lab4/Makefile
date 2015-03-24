@@ -2,7 +2,7 @@
 TARGET = lab4
 
 # Object definitions
-OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o frequency_estimation.o rejectDC.o real_time.o
+OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o frequency_estimation.o rejectDC.o dcblock.o real_time.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
@@ -68,6 +68,9 @@ frequency_estimation.o: frequency_estimation.c frequency_estimation.h
 
 rejectDC.o: rejectDC.c rejectDC.h
 	$(CC) -c rejectDC.c -o rejectDC.o $(CFLAGS)
+
+dcblock.o: dcblock.c dcblock.h
+	$(CC) -c dcblock.c -o dcblock.o $(CFLAGS)
 
 flash: $(TARGET).bin
 	st-flash write $(TARGET).bin 0x08000000
