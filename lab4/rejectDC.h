@@ -24,7 +24,7 @@
 typedef struct dc_block_struct {
 
 	int blockSize;			/*!< Number of samples to process */
-	float x_prev;			/*!< Previous value of input; x(n-1) */
+	float x_prev[2];			/*!< Previous value of input; x(n-1) */
 	float y_prev;			/*!< Previous value of output; y(n-1) */
 
 } DCBLOCK_T;
