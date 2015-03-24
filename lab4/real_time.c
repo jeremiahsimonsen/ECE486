@@ -152,7 +152,7 @@ int main(void)
     	}
 
     	// Block DC
-    	// calc_biquad(dcblocker,input,output1);
+    	// calc_biquad(dcblocker,input,input);
 
 		// calc_biquad(f1,input,stage1_output);
 		calc_biquad(f1,input,output1);
