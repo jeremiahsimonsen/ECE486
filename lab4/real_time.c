@@ -60,6 +60,7 @@
 
 int main(void)
 {
+	int nsamp;
 	/*
 	 * Optional: set the ADC/DAC Block Size to anything down to one sample
 	 * (Omitting this call uses the default block size of 100 samples per data
@@ -76,13 +77,15 @@ int main(void)
 	 */
 	initialize(FS_48K, MONO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
 
+	nsamp = getblocksize();
+
 	// Other variables
 	int i;//,j;
 	// float fs;
 	float *input, *output1, *output2;
-	input = (float *)malloc(sizeof(float)*MY_NSAMP);
- 	output1 = (float *)malloc(sizeof(float)*MY_NSAMP);
- 	output2 = (float *)malloc(sizeof(float)*MY_NSAMP);
+	input = (float *)malloc(sizeof(float)*nsamp);
+ 	output1 = (float *)malloc(sizeof(float)*nsamp);
+ 	output2 = (float *)malloc(sizeof(float)*nsamp);
  	// float *stage1_output, *stage2_input, *stage2_output_re, *stage2_output_im;
  	// stage1_output = (float *)malloc(sizeof(float)*MY_NSAMP);
  	// float *stage2_input, *buffer;
@@ -105,7 +108,7 @@ int main(void)
   
  	// Filter initializations
 	BIQUAD_T *f1;//, *f2;
-	f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, MY_NSAMP);
+	f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, nsamp);
 	// f2 = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, MY_NSAMP);
 
 	// DC blocker initialization
@@ -140,7 +143,7 @@ int main(void)
     	 */
 		DIGITAL_IO_SET();
 		// copy input to output1
-		for(i=0;i<MY_NSAMP;i++) {
+		for(i=0;i<nsamp;i++) {
     		output2[i] = input[i];
     	}
 
