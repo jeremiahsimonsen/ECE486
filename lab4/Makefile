@@ -2,7 +2,8 @@
 TARGET = lab4
 
 # Object definitions
-OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o frequency_estimation.o rejectDC.o dcblock.o mixer.o real_time.o
+OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o frequency_estimation.o mixer.o real_time.o 
+#rejectDC.o dcblock.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
 ARCH = STM32F407xx
