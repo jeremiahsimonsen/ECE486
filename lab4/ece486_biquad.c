@@ -63,7 +63,7 @@ BIQUAD_T * init_biquad(int sections, float g, float a[][3], float b[][3], int bl
   int i;
 
   // changed by TR 3-11-15
-  s->v_buff = (float (*)[2]) malloc((s->sections) * sizeof(float));
+  s->v_buff = (float (*)[2]) malloc((s->sections) * sizeof(float) * 2);
   if (s->v_buff == NULL) return NULL;
   
   for(i=0; i<sections; i++){

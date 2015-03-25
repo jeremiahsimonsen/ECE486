@@ -29,7 +29,7 @@
  */
 
 // Define the decimation rate...
-#define D1 10
+#define D1 5
 #define MY_NSAMP 100
 
 
@@ -106,8 +106,8 @@ int main(void)
   
  	// Filter initializations
 	BIQUAD_T *f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, nsamp);
-	BIQUAD_T *f2_re = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp);
-	BIQUAD_T *f2_im = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp);
+	BIQUAD_T *f2_re = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp/D1);
+	BIQUAD_T *f2_im = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp/D1);
 	// BIQUAD_T *dcblocker = init_biquad(dcblock_num_stages, dcblock_g, dcblock_a_coef, dcblock_b_coef, nsamp);
 
 	// DC blocker initialization
@@ -214,8 +214,8 @@ int main(void)
 						0.4423
 						};
 	int n_coef = 96;
-	MIXER_T *cosine_mix = init_mixer(mixer_coefs, n_coef, nsamp);
-	MIXER_T *sine_mix = init_mixer(mixer_coefs, n_coef, nsamp);
+	MIXER_T *cosine_mix = init_mixer(mixer_coefs, n_coef, nsamp/D1);
+	MIXER_T *sine_mix = init_mixer(mixer_coefs, n_coef, nsamp/D1);
 	sine_mix->m_index += 24;		// phase shift
 
 	/*
@@ -272,14 +272,15 @@ int main(void)
     	// Mix signals
     	// calc_mixer(cosine_mix,input,output1);
     	// calc_mixer(sine_mix,input,output2);
-    	calc_mixer(cosine_mix,buffer,w_re);
-    	calc_mixer(sine_mix,buffer,w_im);
+	   	calc_mixer(cosine_mix,buffer,w_re);
+	   	calc_mixer(sine_mix,buffer,w_im);
 
 
 		// Lowpass filter
-    	calc_biquad(f2_re,w_re,w_re);
-    	calc_biquad(f2_im,w_im,w_im);
-
+    	// calc_biquad(f2_re,w_re,w_re);
+    	// calc_biquad(f2_im,w_im,w_im);
+    	// calc_biquad(f2_re,buffer,w_re);
+    	// calc_biquad(f2_re,input,output1);
 
     	// Frequency Estimation
     	// w_re = delta_f(w_re,w_im,nsamp);
@@ -298,7 +299,7 @@ int main(void)
 				output1[i*D1+j] = w_re[i];
 				output2[i*D1+j] = w_im[i];
 				// // output1[i*D1+j] = stage2_input[i];
-				// output1[i*D1+j] = buffer[i];
+				 // output1[i*D1+j] = buffer[i];
     		}
     	}
     
