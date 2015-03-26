@@ -2,7 +2,7 @@
 TARGET = lab4
 
 # Object definitions
-OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o frequency_estimation.o mixer.o rejectDC.o real_time.o 
+OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o filter3_coef.o frequency_estimation.o mixer.o rejectDC.o real_time.o 
 #rejectDC.o dcblock.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
@@ -63,6 +63,9 @@ filter1_coef.o: filter1_coef.c filter1_coef.h
 
 filter2_coef.o: filter2_coef.c filter2_coef.h
 	$(CC) -c filter2_coef.c -o filter2_coef.o $(CFLAGS)
+
+filter3_coef.o: filter3_coef.c filter3_coef.h
+	$(CC) -c filter3_coef.c -o filter3_coef.o $(CFLAGS)
 
 frequency_estimation.o: frequency_estimation.c frequency_estimation.h
 	$(CC) -c frequency_estimation.c -o frequency_estimation.o $(CFLAGS)

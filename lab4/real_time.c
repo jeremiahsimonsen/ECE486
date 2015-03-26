@@ -55,6 +55,7 @@
 
 #include "filter1_coef.h"
 #include "filter2_coef.h"
+#include "filter3_coef.h"
 // #include "dcblock.h"
 #include "rejectDC.h"
 #include "frequency_estimation.h"
@@ -110,6 +111,7 @@ int main(void)
 	BIQUAD_T *f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, nsamp);
 	BIQUAD_T *f2_re = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp/D1);
 	BIQUAD_T *f2_im = init_biquad(filter2_num_stages, filter2_g, filter2_a_coef, filter2_b_coef, nsamp/D1);
+	BIQUAD_T *f3 = init_biquad(filter3_num_stages, filter3_g, filter3_a_coef, filter3_b_coef,nsamp/D1);
 	// BIQUAD_T *dcblocker = init_biquad(dcblock_num_stages, dcblock_g, dcblock_a_coef, dcblock_b_coef, nsamp);
 
 	// DC blocker initialization
@@ -286,6 +288,8 @@ int main(void)
 
     	// Frequency Estimation
     	delta_f(df,w_re,w_im,nsamp/D1);
+
+    	calc_biquad(f3, df, df);
     
     
     	/* 
