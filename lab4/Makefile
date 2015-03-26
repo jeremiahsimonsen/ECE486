@@ -2,7 +2,7 @@
 TARGET = lab4
 
 # Object definitions
-OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o frequency_estimation.o mixer.o real_time.o 
+OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o frequency_estimation.o mixer.o rejectDC.o real_time.o 
 #rejectDC.o dcblock.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
@@ -20,7 +20,7 @@ OBJCOPY=arm-none-eabi-objcopy
 INCDIRS = -I$(INSTALLDIR)/include -I.
 LIBDIRS = -L$(INSTALLDIR)/lib
 
-LIBS= -lc -lnosys -lece486_$(ARCH) -l$(ARCH) -lcmsis_dsp_$(ARCH)
+LIBS= -lc -lnosys -lece486_$(ARCH) -l$(ARCH) -lcmsis_dsp_$(ARCH) -lm
 
 LINKSCRIPT = $(INSTALLDIR)/lib/$(ARCH)_FLASH.ld
 

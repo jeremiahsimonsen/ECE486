@@ -16,6 +16,7 @@ The delta-f values should be either deltaf = +- .0521
 #include <stdlib.h>
 
 #include "frequency_estimation.h"
+#include <math.h>
 #include "arm_math.h"
 
 
@@ -28,11 +29,10 @@ The delta-f values should be either deltaf = +- .0521
  * @param length [description]
  * @return [description]
  */
-float *delta_f(float *y_re, float *y_im, int blocksize) {
+void delta_f(float *df, float *y_re, float *y_im, int blocksize) {
 	// Store last value of complex a(n) for continuity between sample blocks
 	static float last_a_re = 0.0, last_a_im = 0.0;
 
-	float *df = (float *)malloc(sizeof(float)*blocksize);
 	float mag = 0.0;
 	int n;
 
@@ -53,7 +53,8 @@ float *delta_f(float *y_re, float *y_im, int blocksize) {
 
 		// Calculate delta-f 
 		// for the FSK detector, delta-f should be +- 0.0521 (+- 500 / 9.6k)
-		df[n] = df[n] / (2 * PI);
+		df[n] = df[n] / (2 * PI) * 6.4;
+
 
 	// 	high_margin_deltaf = deltaf + (deltaf * 0.05);
 	// 	low_margin_deltaf = deltaf - (deltaf * 0.05);
@@ -71,8 +72,6 @@ float *delta_f(float *y_re, float *y_im, int blocksize) {
 	// Update last values
 	last_a_re = y_re[blocksize-1];
 	last_a_im = y_im[blocksize-1];
-
-	return df;
 
 }
 

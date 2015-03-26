@@ -21,8 +21,9 @@
  * @return A pointer to a float array containing the calculated delta-f values
  * for the block of samples
  */
-float *delta_f(
-		float *y_re,		// pointer to array of real terms
-		float *y_im,		// pointer to array of imaginary sin terms
-		int blocksize	// number of terms in a array
+void delta_f(
+	float *df,		// pointer to array of delta_f
+	float *y_re,	// pointer to array of real terms
+	float *y_im,	// pointer to array of imaginary sin terms
+	int blocksize	// number of terms in a array
 );

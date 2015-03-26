@@ -56,7 +56,7 @@
 #include "filter1_coef.h"
 #include "filter2_coef.h"
 // #include "dcblock.h"
-// #include "rejectDC.h"
+#include "rejectDC.h"
 #include "frequency_estimation.h"
 #include "ece486_mixer.h"
 
@@ -90,8 +90,10 @@ int main(void)
  	output1 = (float *)malloc(sizeof(float)*nsamp);
  	output2 = (float *)malloc(sizeof(float)*nsamp);
  	float *buffer = (float *)malloc(sizeof(float)*nsamp/D1);
+ 	float *buffer2 = (float *)malloc(sizeof(float)*nsamp/D1);
  	float *w_re = (float *)malloc(sizeof(float)*nsamp/D1);
  	float *w_im = (float *)malloc(sizeof(float)*nsamp/D1);
+ 	float *df = (float *)malloc(sizeof(float)*nsamp/D1);
  	
 
  	if (input==NULL || output1==NULL || output2==NULL) {
@@ -99,7 +101,7 @@ int main(void)
  		while(1);
  	}
 
- 	if (buffer==NULL || w_re==NULL || w_im==NULL) {
+ 	if (buffer==NULL || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL){
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
  	}
@@ -111,8 +113,8 @@ int main(void)
 	// BIQUAD_T *dcblocker = init_biquad(dcblock_num_stages, dcblock_g, dcblock_a_coef, dcblock_b_coef, nsamp);
 
 	// DC blocker initialization
-	// DCBLOCK_T *dcblocker;
-	// dcblocker = init_dcblock(nsamp/D1);
+	DCBLOCK_T *dcblocker;
+	dcblocker = init_dcblock(nsamp/D1);
 
 	// Initialize the mixer
 	float mixer_coefs[96] = {
@@ -262,7 +264,7 @@ int main(void)
     		buffer[i] = input[i*D1];
     
     	// Reject DC
-    	// calc_dcblock(dcblocker, buffer, stage2_input);
+    	calc_dcblock(dcblocker, buffer, buffer2);
 
     	/*
     	 * Stage 2:  Complete processing at the intermediate sample rate fs/D1.
@@ -272,20 +274,18 @@ int main(void)
     	// Mix signals
     	// calc_mixer(cosine_mix,input,output1);
     	// calc_mixer(sine_mix,input,output2);
-	   	calc_mixer(cosine_mix,buffer,w_re);
-	   	calc_mixer(sine_mix,buffer,w_im);
+	   	calc_mixer(cosine_mix,buffer2,w_re);
+	   	calc_mixer(sine_mix,buffer2,w_im);
 
 
 		// Lowpass filter
-    	// calc_biquad(f2_re,w_re,w_re);
-    	// calc_biquad(f2_im,w_im,w_im);
+    	calc_biquad(f2_re,w_re,w_re);
+    	calc_biquad(f2_im,w_im,w_im);
     	// calc_biquad(f2_re,buffer,w_re);
     	// calc_biquad(f2_re,input,output1);
 
     	// Frequency Estimation
-    	// w_re = delta_f(w_re,w_im,nsamp);
-
-    
+    	delta_f(df,w_re,w_im,nsamp/D1);
     
     
     	/* 
@@ -296,8 +296,9 @@ int main(void)
     	for (i=0; i<nsamp/D1; i++) {
     	  	// Every stage-3 output should be written to D1 output samples!
     	  	for (j=0; j<D1; j++) {
-				output1[i*D1+j] = w_re[i];
-				output2[i*D1+j] = w_im[i];
+				// output1[i*D1+j] = w_re[i];
+				// output2[i*D1+j] = w_im[i];
+				output1[i*D1+j] = df[i];
 				// // output1[i*D1+j] = stage2_input[i];
 				 // output1[i*D1+j] = buffer[i];
     		}
