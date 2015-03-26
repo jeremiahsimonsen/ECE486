@@ -34,7 +34,7 @@ Hd = design(h, 'ellip', 'MatchExactly', match);
 
 % Get the transfer function values.
 [b, a] = tf(Hd);
-g = prod(Hd.ScaleValues);
+g = prod(Hd.ScaleValues);				% Calculate gain factor
 
 % Convert to a singleton filter.
 Hd = dfilt.df2(b, a);
