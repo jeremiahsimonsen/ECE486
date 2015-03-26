@@ -2,7 +2,12 @@
 TARGET = lab4
 
 # Object definitions
-OBJS = ARM_biquad.o ARM_fir.o filter1_coef.o filter2_coef.o filter3_coef.o frequency_estimation.o mixer.o rejectDC.o real_time.o 
+FILTERS = ARM_biquad.o ARM_fir.o rejectDC.o
+COEFS = filter1_coef.o filter2_coef.o filter3_coef.o
+FREQ = frequency_estimation.o
+MIX = mixer.o mixer_coef.o
+BOARD = real_time.o
+OBJS = $(FILTERS) $(COEFS) $(FREQ) $(MIX) $(BOARD) 
 #rejectDC.o dcblock.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
@@ -78,6 +83,9 @@ dcblock.o: dcblock.c dcblock.h
 
 mixer.o: ece486_mixer.c ece486_mixer.h
 	$(CC) -c ece486_mixer.c -o mixer.o $(CFLAGS)
+
+mixer_coef.o: mixer_coef.c mixer_coef.h
+	$(CC) -c mixer_coef.c -o mixer_coef.o $(CFLAGS)
 
 flash: $(TARGET).bin
 	st-flash write $(TARGET).bin 0x08000000
