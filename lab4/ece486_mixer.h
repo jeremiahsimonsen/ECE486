@@ -61,8 +61,6 @@
 #ifndef ECE486_MIXER
 #define ECE486_MIXER
 
- /*******  ECE486 STUDENTS MODIFY THIS *******/
-
  typedef struct mixer_struct {
 
 	 float *c;

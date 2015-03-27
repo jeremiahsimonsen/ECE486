@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// test biquad filter
 int main(int argc, char *argv[]) {
-	BIQUAD_T *f1;//, *f2;
+	BIQUAD_T *f1;
 	f1 = init_biquad(filter1_num_stages, filter1_g, filter1_a_coef, filter1_b_coef, 10);
 
 	float x[10] =  {1,2,3,4,5,6,7,8,9,10};

@@ -24,6 +24,6 @@
 void delta_f(
 	float *df,		// pointer to array of delta_f
 	float *y_re,	// pointer to array of real terms
-	float *y_im,	// pointer to array of imaginary sin terms
-	int blocksize	// number of terms in a array
+	float *y_im,	// pointer to array of imaginary terms
+	int blocksize	// number of terms in 'a' array
 );
