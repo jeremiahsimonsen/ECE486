@@ -9,3 +9,6 @@ latex/
 # Executables
 lab2/task1
 lab2/task2
+
+# MATLAB .asv files
+*.asv
