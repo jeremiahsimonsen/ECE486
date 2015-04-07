@@ -23,9 +23,9 @@
 #ifndef LOWPASS1_COEF_H
 #define LOWPASS1_COEF_H
 
-extern float lowpass1_a_coef[][3];
-extern float lowpass1_b_coef[][3];
-extern float lowpass1_g;
-extern int lowpass1_num_stages;
+extern float lowpass_a_coef[][3];
+extern float lowpass_b_coef[][3];
+extern float lowpass_g;
+extern int lowpass_num_stages;
 
 #endif
