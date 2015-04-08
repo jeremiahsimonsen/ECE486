@@ -5,7 +5,7 @@ TARGET = lab5
 FILTERS = ARM_biquad.o ARM_fir.o
 COEFS = lowpass1_coef.o
 BOARD = real_time.o
-OBJS = $(FILTERS) $(COEFS) $(BOARD) 
+OBJS = $(FILTERS) $(COEFS) $(BOARD) numtostr.o
 #rejectDC.o dcblock.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
@@ -64,6 +64,8 @@ ARM_fir.o: ece486_fir.c ece486_fir.h
 lowpass1_coef.o: lowpass1_coef.c lowpass1_coef.h
 	$(CC) -c lowpass1_coef.c -o lowpass1_coef.o $(CFLAGS)
 
+numtostr.o: numtostr.c numtostr.h
+	$(CC) -c numtostr.c -o numtostr.o $(CFLAGS)
 
 flash: $(TARGET).bin
 	st-flash write $(TARGET).bin 0x08000000

@@ -28,12 +28,13 @@
  * 
  */
 
-// FIXME Everything
 
 // Define the decimation rate...
-#define D1 4
-#define MY_NSAMP 128
-#define FFT_N 2048
+#define MY_FS FS_48K
+#define D1 8
+#define MY_NSAMP 4096
+#define BLOCKS 6
+#define FFT_N 1024
 #define FORWARD_FFT 0
 #define INVERSE_FFT 1
 
@@ -60,9 +61,13 @@
 
 #include "lowpass1_coef.h"
 
+#include "numtostr.h"
+void send_report(float x1, float x2, float x3, float x4);
+
 int main(void)
 {
 	int nsamp;
+	static int block_count = 0;
 	/*
 	 * Optional: set the ADC/DAC Block Size to anything down to one sample
 	 * (Omitting this call uses the default block size of 100 samples per data
@@ -77,36 +82,48 @@ int main(void)
 	 * Set up the required 50 ksps sample rate... Use the ADC to measure 
 	 * a function generator or a microphone input
 	 */
-	initialize(FS_48K, STEREO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
+	initialize(MY_FS, STEREO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
 
 	nsamp = getblocksize(); 	// get number of samples
 
 	// Index variables
 	int i;
-	int j;
+
 	// ADC inputs
 	float *input1 = (float *)malloc(sizeof(float)*nsamp);
 	float *input2 = (float *)malloc(sizeof(float)*nsamp);
+
  	// DAC outputs
  	float *output1 = (float *)malloc(sizeof(float)*nsamp);
  	float *output2 = (float *)malloc(sizeof(float)*nsamp);
+
  	// Decimated real and imaginary signals; outputs of lowpass filter
  	float32_t *buffer_re = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
  	float32_t *buffer_im = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
- 	// Input (and output) to the complex FFT; interleaved of above
- 	float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*2*nsamp/D1);
+
+ 	// Input (and output) to the complex FFT; interleaved of above and zero pad
+ 	float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*FFT_N);
+ 	// float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*2*nsamp/D1);
+
  	// Magnitude of the FFT
- 	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
+ 	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*FFT_N/2);
+ 	// float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
+
+
  	// Maxima
- 	float32_t *max_pos_val, *max_neg_val;
- 	uint32_t *max_pos_ind, *max_neg_ind;
+ 	float32_t max_pos_val, max_neg_val;
+ 	uint32_t max_pos_ind, max_neg_ind;
+ 	float32_t max_pos_freq, max_neg_freq;
+
+ 	// Velocities
+ 	float32_t pos_vel, neg_vel;
 
  	// Complex FFT structure initializations	
  	arm_cfft_radix2_instance_f32 fft;
 	arm_cfft_radix2_init_f32(&fft, FFT_N, FORWARD_FFT, 0);
  	
  	// Error check memory allocation
- 	if (input1==NULL || input2==NULL || output1==NULL || output2==NULL || buffer==NULL) {
+ 	if (input1==NULL || input2==NULL || output1==NULL || output2==NULL || buffer_re==NULL || buffer_im==NULL) {
  	// || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
@@ -155,23 +172,60 @@ int main(void)
     	 *           (Array size MY_NSAMP/D1 samples)
     	 */
 
-    	// README Interleave real and complex
-    	for (i=0; i<2*nsamp/D1; i+=2) {
-    		fft_in[i] = buffer_re[i];
-    		fft_in[i+1] = buffer_im[i];
+    	// Interleave real and complex
+    	for (i=0; i<2*nsamp/D1; i++) {
+    		fft_in[2*i] = buffer_re[i];
+    		fft_in[2*i+1] = buffer_im[i];
+    	}
+    	// Zero the rest of the fft_in array
+    	for (i=2*nsamp/D1; i<FFT_N; i++) {
+    		fft_in[i] = 0.0;
     	}
 
-    	// README Calculate complex fft
-    	arm_cfft_radix2_f32(fft, fft_in);
+    	// Calculate complex fft
+    	arm_cfft_radix2_f32(&fft, fft_in);
 
-    	// README Calculate complex magnitude
-    	arm_cmplx_mag_f32(fft_in, mag, nsamp/D1);
+    	// Calculate complex magnitude
+    	arm_cmplx_mag_f32(fft_in, mag, FFT_N);
+    	// arm_cmplx_mag_f32(fft_in, mag, nsamp/D1);
 
     	// README Find maximum of positive (first half array) and negative (2nd half) frequencies
-    	arm_max_f32(mag, nsamp/D1/2, max_pos_val, max_pos_ind);
-    	arm_max_f32(&mag[nsamp/D1/2+1], nsamp/D1/2, max_neg_val, max_neg_ind);
+    	// arm_max_f32(&mag[0], FFT_N/2, &max_pos_val, &max_pos_ind);
+    	// arm_max_f32(&mag[FFT_N/2+1], FFT_N/2, &max_neg_val, &max_neg_ind);
+    	// arm_max_f32(mag, nsamp/D1/2, max_pos_val, max_pos_ind);
+    	// arm_max_f32(&mag[nsamp/D1/2+1], nsamp/D1/2, max_neg_val, max_neg_ind);
 
-    	// TODO Print to serial
+    	// TODO Find highest positive frequency above a threshold in first half
+    	// of the magnitude array
+
+
+    	// TODO Find highest negative frequency above a threshold in 2nd half
+    	// of the magnitude array
+
+    	// Un-normalize frequency
+    	max_pos_freq = (max_pos_ind/FFT_N) * MY_FS / D1;
+    	max_neg_freq = ( (max_neg_ind+FFT_N/2)/FFT_N-1) * MY_FS / D1;
+
+    	// README Threshold and calculate velocity
+    	if (max_pos_val <= .1) {
+    		pos_vel = 0.0;
+    	} else {
+    		// pos_vel = max_pos_freq * 3e8 / (2*5.8e9)
+    		pos_vel = max_pos_freq * 0.025862068966;
+    	}
+
+    	if (max_neg_val <= .1) {
+    		neg_vel = 0.0;
+    	} else {
+    		neg_vel = max_neg_freq * 0.025862068966;
+    	}
+
+    	// README Print to serial
+    	block_count++;
+    	if (block_count == BLOCKS) {
+    		send_report(pos_vel, max_pos_val, neg_vel, max_neg_val);
+    		block_count = 0;
+    	}
     
     	/* 
     	 * Write output values to the DAC....  NOTE: Be sure to set the output
@@ -193,4 +247,37 @@ int main(void)
     	putblockstereo(output1, output2);
       
   }
+}
+
+void send_report(float x1, float x2, float x3, float x4) {
+  // Send a comma-separated list of four numbers to the serial port,
+  // terminated by a newline.
+  static char outstr[100], *endstr;
+  
+  endstr = outstr;
+  floattostr(x1, outstr, 2);
+  while (*endstr != '\0') endstr++;
+  *endstr = ',';
+  endstr++;
+
+  floattostr(x2, endstr , 2);
+  while (*endstr != '\0') endstr++;
+  *endstr = ',';
+  endstr++;
+  
+  //strcat(outstr, ", ");
+  floattostr(x3, endstr , 2);
+  while (*endstr != '\0') endstr++;
+  *endstr = ',';
+  endstr++;
+  
+  //strcat(outstr, ", ");
+  floattostr(x4, endstr , 2);
+  while (*endstr != '\0') endstr++;
+  endstr[0] = '\n';
+  endstr[1] = '\0';
+  
+ //strcat(outstr,"\n");
+  UART_putstr(outstr);
+  return;
 }
