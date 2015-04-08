@@ -29,8 +29,11 @@
  */
 
 // Define the decimation rate...
-#define D1 5
-#define MY_NSAMP 100
+#define D1 4
+#define MY_NSAMP 128
+#define FFT_N 2048
+#define FORWARD_FFT 0
+#define INVERSE_FFT 1
 
 
 #include "stm32f4xx_hal.h"
@@ -83,14 +86,18 @@ int main(void)
 	input = (float *)malloc(sizeof(float)*nsamp);
  	output1 = (float *)malloc(sizeof(float)*nsamp);
  	output2 = (float *)malloc(sizeof(float)*nsamp);
- 	// float *buffer = (float *)malloc(sizeof(float)*nsamp/D1);
+ 	float *buffer = (float *)malloc(sizeof(float)*nsamp/D1);
  	// float *buffer2 = (float *)malloc(sizeof(float)*nsamp/D1);
  	// float *w_re = (float *)malloc(sizeof(float)*nsamp/D1);
- 	// float *w_im = (float *)malloc(sizeof(float)*nsamp/D1);	
+ 	// float *w_im = (float *)malloc(sizeof(float)*nsamp/D1);
+
+ 	// Complex FFT initializations
+ 	arm_cfft_radix2_instance_f32 *fft;
+	arm_cfft_radix2_init_f32(fft, FFT_N, FORWARD_FFT, 0);
  	
  	// Error check memory allocation
- 	if (input==NULL || output1==NULL || output2==NULL) {
- 	// || buffer==NULL || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL
+ 	if (input==NULL || output1==NULL || output2==NULL || buffer==NULL) {
+ 	// || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
  	}
@@ -128,8 +135,8 @@ int main(void)
 		calc_biquad(f1,input,input);
 
     	// Decimate by D1
-    	// for (i=0; i<MY_NSAMP/D1; i++) 
-    	// 	buffer[i] = input[i*D1];
+    	for (i=0; i<MY_NSAMP/D1; i++) 
+    		buffer[i] = input[i*D1];
     
     	// Reject DC
     	// calc_dcblock(dcblocker, buffer, buffer2);
@@ -139,31 +146,19 @@ int main(void)
     	 *           (Array size MY_NSAMP/D1 samples)
     	 */
 
-    	// Mix signals
-	   	// calc_mixer(cosine_mix,buffer2,w_re);
-	   	// calc_mixer(sine_mix,buffer2,w_im);
-
-		// Lowpass filter
-    	// calc_biquad(f2_re,w_re,w_re);
-    	// calc_biquad(f2_im,w_im,w_im);
-
-    	// Frequency Estimation
-    	// delta_f(df,w_re,w_im,nsamp/D1);
-
-    	// Clean up frequency estimation
-    	// calc_biquad(f3, df, df);
+    	
     
     	/* 
     	 * Write output values to the DAC....  NOTE: Be sure to set the output
     	 * array to values for every INPUT sample (not just samples at the decimated 
     	* rates!
     	*/
-    // 	for (i=0; i<nsamp/D1; i++) {
-    // 	  	// Every stage-3 output should be written to D1 output samples!
-    // 	  	for (j=0; j<D1; j++) {
-				// output1[i*D1+j] = df[i];
-    // 		}
-    // 	}
+    	for (i=0; i<nsamp/D1; i++) {
+    	  	// Every stage-3 output should be written to D1 output samples!
+    	  	for (j=0; j<D1; j++) {
+				output1[i*D1+j] = df[i];
+    		}
+    	}
     
     	DIGITAL_IO_RESET();
 
