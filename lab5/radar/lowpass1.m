@@ -11,7 +11,7 @@ function Hd = lowpass1
 Fs = 48000;  % Sampling Frequency
 
 Fpass = 2000;    % Passband Frequency
-Fstop = 4000;    % Stopband Frequency
+Fstop = 2800;    % Stopband Frequency
 Apass = 1;       % Passband Ripple (dB)
 Astop = 80;      % Stopband Attenuation (dB)
 match = 'both';  % Band to match exactly
