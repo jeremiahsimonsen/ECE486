@@ -28,6 +28,8 @@
  * 
  */
 
+// FIXME Everything
+
 // Define the decimation rate...
 #define D1 4
 #define MY_NSAMP 128
@@ -75,44 +77,48 @@ int main(void)
 	 * Set up the required 50 ksps sample rate... Use the ADC to measure 
 	 * a function generator or a microphone input
 	 */
-	initialize(FS_48K, MONO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
+	initialize(FS_48K, STEREO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
 
 	nsamp = getblocksize(); 	// get number of samples
 
-	// Other variables
+	// Index variables
 	int i;
 	int j;
-	float *input, *output1, *output2;
-	input = (float *)malloc(sizeof(float)*nsamp);
- 	output1 = (float *)malloc(sizeof(float)*nsamp);
- 	output2 = (float *)malloc(sizeof(float)*nsamp);
- 	float *buffer = (float *)malloc(sizeof(float)*nsamp/D1);
- 	// float *buffer2 = (float *)malloc(sizeof(float)*nsamp/D1);
- 	// float *w_re = (float *)malloc(sizeof(float)*nsamp/D1);
- 	// float *w_im = (float *)malloc(sizeof(float)*nsamp/D1);
+	// ADC inputs
+	float *input1 = (float *)malloc(sizeof(float)*nsamp);
+	float *input2 = (float *)malloc(sizeof(float)*nsamp);
+ 	// DAC outputs
+ 	float *output1 = (float *)malloc(sizeof(float)*nsamp);
+ 	float *output2 = (float *)malloc(sizeof(float)*nsamp);
+ 	// Decimated real and imaginary signals; outputs of lowpass filter
+ 	float32_t *buffer_re = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
+ 	float32_t *buffer_im = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
+ 	// Input (and output) to the complex FFT; interleaved of above
+ 	float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*2*nsamp/D1);
+ 	// Magnitude of the FFT
+ 	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
+ 	// Maxima
+ 	float32_t *max_pos_val, *max_neg_val;
+ 	uint32_t *max_pos_ind, *max_neg_ind;
 
- 	// Complex FFT initializations
- 	arm_cfft_radix2_instance_f32 *fft;
-	arm_cfft_radix2_init_f32(fft, FFT_N, FORWARD_FFT, 0);
+ 	// Complex FFT structure initializations	
+ 	arm_cfft_radix2_instance_f32 fft;
+	arm_cfft_radix2_init_f32(&fft, FFT_N, FORWARD_FFT, 0);
  	
  	// Error check memory allocation
- 	if (input==NULL || output1==NULL || output2==NULL || buffer==NULL) {
+ 	if (input1==NULL || input2==NULL || output1==NULL || output2==NULL || buffer==NULL) {
  	// || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
  	}
   
  	// Filter initializations
-	BIQUAD_T *low1 = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
+	BIQUAD_T *low1_re = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
+	BIQUAD_T *low1_im = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
 
 	// DC blocker initialization
 	// DCBLOCK_T *dcblocker;
 	// dcblocker = init_dcblock(nsamp/D1);
-
-	// Initialize the mixer
-	// MIXER_T *cosine_mix = init_mixer(mixer_coef, n_mixer, nsamp/D1);
-	// MIXER_T *sine_mix = init_mixer(mixer_coef, n_mixer, nsamp/D1);
-	// sine_mix->m_index += 24;		// phase shift
   
 	/*
 	 * Infinite Loop to process the data stream "MY_NSAMP" samples at a time
@@ -123,7 +129,7 @@ int main(void)
 		 *   getblock() will wait until the input buffer is filled...  On return
 		 *   we work on the new data buffer.
 		 */
-		getblock(input);	// Wait here until the input buffer is filled... 
+		getblockstereo(input1,input2);	// Wait here until the input buffer is filled... 
     
     	/*
     	 * Stage 1:  Complete processing at the incoming sample frequency fs.
@@ -131,12 +137,15 @@ int main(void)
     	 */
 		DIGITAL_IO_SET();
 
-    	// Block DC
-		calc_biquad(f1,input,input);
+    	// Lowpass filter
+		calc_biquad(low1_re,input1,input1);
+		calc_biquad(low1_im,input2,input2);
 
     	// Decimate by D1
-    	for (i=0; i<MY_NSAMP/D1; i++) 
-    		buffer[i] = input[i*D1];
+    	for (i=0; i<MY_NSAMP/D1; i++) {
+    		buffer_re[i] = input1[i*D1];
+    		buffer_im[i] = input2[i*D1];
+    	}
     
     	// Reject DC
     	// calc_dcblock(dcblocker, buffer, buffer2);
@@ -146,19 +155,35 @@ int main(void)
     	 *           (Array size MY_NSAMP/D1 samples)
     	 */
 
-    	
+    	// README Interleave real and complex
+    	for (i=0; i<2*nsamp/D1; i+=2) {
+    		fft_in[i] = buffer_re[i];
+    		fft_in[i+1] = buffer_im[i];
+    	}
+
+    	// README Calculate complex fft
+    	arm_cfft_radix2_f32(fft, fft_in);
+
+    	// README Calculate complex magnitude
+    	arm_cmplx_mag_f32(fft_in, mag, nsamp/D1);
+
+    	// README Find maximum of positive (first half array) and negative (2nd half) frequencies
+    	arm_max_f32(mag, nsamp/D1/2, max_pos_val, max_pos_ind);
+    	arm_max_f32(&mag[nsamp/D1/2+1], nsamp/D1/2, max_neg_val, max_neg_ind);
+
+    	// TODO Print to serial
     
     	/* 
     	 * Write output values to the DAC....  NOTE: Be sure to set the output
     	 * array to values for every INPUT sample (not just samples at the decimated 
     	* rates!
     	*/
-    	for (i=0; i<nsamp/D1; i++) {
-    	  	// Every stage-3 output should be written to D1 output samples!
-    	  	for (j=0; j<D1; j++) {
-				output1[i*D1+j] = df[i];
-    		}
-    	}
+    // 	for (i=0; i<nsamp/D1; i++) {
+    // 	  	// Every stage-3 output should be written to D1 output samples!
+    // 	  	for (j=0; j<D1; j++) {
+				// output1[i*D1+j] = buffer[i];
+    // 		}
+    // 	}
     
     	DIGITAL_IO_RESET();
 
