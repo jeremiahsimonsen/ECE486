@@ -34,13 +34,13 @@
 #define D1 10
 #define D2 10
 #define MY_NSAMP 620
-// #define BLOCKS 4
+// #define BLOCKS 40
 #define FFT_N 1024
 #define FORWARD_FFT 0
 #define INVERSE_FFT 1
 
-#define POS_THRESHOLD 100.0
-#define NEG_THRESHOLD 100.0
+#define POS_THRESHOLD 0.0
+#define NEG_THRESHOLD 0.0
 
 
 #include "stm32f4xx_hal.h"
@@ -56,15 +56,15 @@
 
 #include "ece486.h"
 #include <stdlib.h>
-#include <stdio.h>
+// #include <stdio.h>
 #include <math.h>
 #include "arm_math.h"
-#include "arm_common_tables.h"
+// #include "arm_common_tables.h"
 
 // #include "ece486_fir.h"			// FIR filter routines
 #include "ece486_biquad.h"			// IIR filter routines
 
-#include "lowpass1_coef.h"
+// #include "lowpass1_coef.h"
 
 #include "numtostr.h"
 void send_report(float x1, float x2, float x3, float x4);
@@ -87,11 +87,12 @@ int main(void)
 	 * Set up the required 50 ksps sample rate... Use the ADC to measure 
 	 * a function generator or a microphone input
 	 */
-	initialize(MY_FS, STEREO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
+	initialize(MY_FS, STEREO_IN, MONO_OUT);       // Set up: ADC input, DAC output
 
 	
 
-	nsamp = getblocksize(); 	// get number of samples
+	// nsamp = getblocksize(); 	// get number of samples
+	nsamp = MY_NSAMP;
 
 	// Index variables
 	int i, start, end;
@@ -105,53 +106,53 @@ int main(void)
  	// float *output2 = (float *)malloc(sizeof(float)*nsamp);
 
  	// Decimated real and imaginary signals; outputs of lowpass filter
- 	float32_t *buffer_re = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
- 	float32_t *buffer_im = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
+ 	// float32_t *buffer_re = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
+ 	// float32_t *buffer_im = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
 
  	// Input (and output) to the complex FFT; interleaved of above and zero pad
- 	float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*FFT_N);
+ 	// float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*FFT_N*2);
  	// float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*2*nsamp/D1);
 
  	// Magnitude of the FFT
- 	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*FFT_N);
+ 	// float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*FFT_N);
  	// float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
 
 
  	// Maxima
- 	int one_ms;
- 	float max_pos_val = 0.0;
- 	float max_neg_val = 0.0;
- 	float max_pos_ind = 0;
- 	float max_neg_ind = 0;
- 	float32_t max_pos_freq = 0.0;
- 	float32_t max_neg_freq = 0.0;
+ 	// int one_ms;
+ 	// float max_pos_val = 0.0;
+ 	// float max_neg_val = 0.0;
+ 	// float max_pos_ind = 0;
+ 	// float max_neg_ind = 0;
+ 	// float32_t max_pos_freq = 0.0;
+ 	// float32_t max_neg_freq = 0.0;
 
  	// Velocities
- 	float pos_vel, neg_vel;
+ 	// float pos_vel, neg_vel;
 
  	// Complex FFT structure initializations	
- 	arm_cfft_radix2_instance_f32 fft;
-	arm_status status = arm_cfft_radix2_init_f32(&fft, FFT_N, FORWARD_FFT, 0);
-	if (status != ARM_MATH_SUCCESS)
-		flagerror(MEMORY_ALLOCATION_ERROR);
+ // 	arm_cfft_radix2_instance_f32 fft;
+	// arm_status status = arm_cfft_radix2_init_f32(&fft, FFT_N, FORWARD_FFT, 1);
+	// if (status != ARM_MATH_SUCCESS)
+	// 	flagerror(MEMORY_ALLOCATION_ERROR);
  	
  	// Error check memory allocation
- 	if (input1==NULL || input2==NULL || buffer_re==NULL || buffer_im==NULL || fft_in==NULL || mag==NULL) {
+ 	if (input1==NULL || input2==NULL){// || buffer_re==NULL || buffer_im==NULL || fft_in==NULL || mag==NULL) {
  	// || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
  	}
   
  	// Filter initializations
-	BIQUAD_T *low1_re = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
-	BIQUAD_T *low1_im = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
+	// BIQUAD_T *low1_re = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
+	// BIQUAD_T *low1_im = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
 
 	// DC blocker initialization
 	// DCBLOCK_T *dcblocker;
 	// dcblocker = init_dcblock(nsamp/D1);
 
 	char buf[20] = "Running\n\r";
-	char buf2[3];
+	char buf2[23];
 	UART_putstr(buf);
 
 	/*
@@ -172,105 +173,102 @@ int main(void)
     	 * Stage 1:  Complete processing at the incoming sample frequency fs.
     	 *           (Array size MY_NSAMP samples)
     	 */
-		DIGITAL_IO_SET();
+		// DIGITAL_IO_SET();
 
-    	// Lowpass filter
-		calc_biquad(low1_re,input1,input1);
-		calc_biquad(low1_im,input2,input2);
+  //   	// Lowpass filter
+		// calc_biquad(low1_re,input1,input1);
+		// calc_biquad(low1_im,input2,input2);
 
-    	// Decimate by D1
-    	for (i=0; i<nsamp/D1; i++) {
-    		buffer_re[i] = input1[i*D1];
-    		buffer_im[i] = input2[i*D1];
-    	}
+  //   	// Decimate by D1
+  //   	for (i=0; i<nsamp/D1; i++) {
+  //   		buffer_re[i] = input1[i*D1];
+  //   		buffer_im[i] = input2[i*D1];
+  //   	}
 
     	
-		start = block_count*nsamp/D1;
-		end = start + nsamp/D1;
+		// start = block_count*2*nsamp/D1;
+		// end = start + 2*nsamp/D1;
     	// Interleave real and complex
-    	for (i=start; i<end; i++) {
-    		fft_in[2*i] = buffer_re[i];
-    		fft_in[2*i+1] = buffer_im[i];
-    	}
+    	// for (i=start; i<nsamp/D1; i++) {
+    	// 	fft_in[start+2*i] = buffer_re[i];
+    	// 	fft_in[start+2*i+1] = buffer_im[i];
+    	// }
     	block_count++;
 
-    	if (block_count<D2) {
-    		continue;
-    	} else {
+    	if (block_count == D2) {
     		block_count = 0;
-    	// }
     	
-    	UART_putstr(buf);
+	    	UART_putstr(buf);
 
-    	// Zero the rest of the fft_in array
-    	for (i=2*nsamp/D1; i<FFT_N; i++) {
-    		fft_in[i] = 0.0;
-    	}
+	    	// Zero the rest of the fft_in array
+	    	// for (i=2*nsamp; i<2*FFT_N; i++) {
+	    	// 	fft_in[i] = 0.0;
+	    	// }
 
-    	// Calculate complex fft
-    	arm_cfft_radix2_f32(&fft, fft_in);
+	    	// Calculate complex fft
+	    	// arm_cfft_radix2_f32(&fft, fft_in);
 
-    	DIGITAL_IO_RESET();
+	    	// DIGITAL_IO_RESET();
 
-    	// Calculate complex magnitude
-    	// for (i=0; i<FFT_N; i++) {
-    	// 	mag[i] = sqrt(fft_in[2*i]*fft_in[2*i] + fft_in[2*i+1]*fft_in[2*i+1]);
-    	// }
-    	arm_cmplx_mag_f32(fft_in, mag, FFT_N);	// This one maybe
-    	// arm_cmplx_mag_f32(fft_in, mag, nsamp/D1);
+	    	// Calculate complex magnitude
+	    	// for (i=0; i<FFT_N; i++) {
+	    	// 	mag[i] = sqrt(fft_in[2*i]*fft_in[2*i] + fft_in[2*i+1]*fft_in[2*i+1]);
+	    	// }
+	    	// arm_cmplx_mag_f32(fft_in, mag, FFT_N);
+	    	// arm_cmplx_mag_f32(fft_in, mag, nsamp/D1);
 
-    	// README Find maximum of positive (first half array) and negative (2nd half) frequencies
-    	// arm_max_f32(&mag[0], FFT_N/2, &max_pos_val, &max_pos_ind);
-    	// arm_max_f32(&mag[FFT_N/2+1], FFT_N/2, &max_neg_val, &max_neg_ind);
-    	// arm_max_f32(mag, nsamp/D1/2, max_pos_val, max_pos_ind);
-    	// arm_max_f32(&mag[nsamp/D1/2+1], nsamp/D1/2, max_neg_val, max_neg_ind);
+	    	// README Find maximum of positive (first half array) and negative (2nd half) frequencies
+	    	// arm_max_f32(&mag[0], FFT_N/2, &max_pos_val, &max_pos_ind);
+	    	// arm_max_f32(&mag[FFT_N/2+1], FFT_N/2, &max_neg_val, &max_neg_ind);
+	    	// arm_max_f32(mag, nsamp/D1/2, max_pos_val, max_pos_ind);
+	    	// arm_max_f32(&mag[nsamp/D1/2+1], nsamp/D1/2, max_neg_val, max_neg_ind);
 
-    	// README Find highest positive frequency above a threshold in first half
-    	// of the magnitude array
-    	one_ms = (int) 38.667/MY_FS/D1*FFT_N;
+	    	// README Find highest positive frequency above a threshold in first half
+	    	// of the magnitude array
+	    	// one_ms = (int) 38.667/MY_FS/D1*FFT_N;
 
-    	for (i=one_ms; i<FFT_N/2; i++) {
-    		if (mag[i] > POS_THRESHOLD) {
-    			max_pos_val = mag[i];
-    			max_pos_ind = i;
-    		}
-    		if (mag[FFT_N-1-i] > NEG_THRESHOLD) {
-    			max_neg_val = mag[FFT_N-1-i];
-    			max_neg_ind = FFT_N-1-i;
-    		}
-    	}
+	    	// for (i=one_ms; i<FFT_N/2; i++) {
+	    	// 	if (mag[i] > POS_THRESHOLD) {
+	    	// 		max_pos_val = mag[i];
+	    	// 		max_pos_ind = i;
+	    	// 	}
+	    	// 	if (mag[FFT_N-1-i] > NEG_THRESHOLD) {
+	    	// 		max_neg_val = mag[FFT_N-1-i];
+	    	// 		max_neg_ind = FFT_N-1-i;
+	    	// 	}
+	    	// }
 
-    	// Un-normalize frequency
-    	max_pos_freq = (max_pos_ind/1024.0) * 48000.0 / 10.0;
-    	max_neg_freq = ( (max_neg_ind - 1024.0)/1024.0 ) * 48000.0 / 10.0;
+	    	// Un-normalize frequency
+	    	// max_pos_freq = (max_pos_ind/1024.0) * 48000.0 / 10.0;
+	    	// max_neg_freq = ( (max_neg_ind - 1024.0)/1024.0 ) * 48000.0 / 10.0;
 
-    	// README Calculate velocity
-		// pos_vel = max_pos_freq * 3e8 / (2*5.8e9)
-		pos_vel = max_pos_freq * 0.025862068966;
-		neg_vel = max_neg_freq * 0.025862068966;
+	    	// README Calculate velocity
+			// pos_vel = max_pos_freq * 3e8 / (2*5.8e9)
+			// pos_vel = max_pos_freq * 0.025862068966;
+			// neg_vel = max_neg_freq * 0.025862068966;
 
 
-    	// README Print to serial
-    	// block_count++;
-    	// if (block_count == BLOCKS) {
-    		// send_report(max_pos_ind, max_pos_freq, max_neg_ind, max_neg_freq);
-    		send_report(pos_vel, fft_in[924], neg_vel, fft_in[925]);
-    		// block_count = 0;
-    	// }
-    
-    	/* 
-    	 * Write output values to the DAC....  NOTE: Be sure to set the output
-    	 * array to values for every INPUT sample (not just samples at the decimated 
-    	* rates!
-    	*/
-    // 	for (i=0; i<nsamp/D1; i++) {
-    // 	  	// Every stage-3 output should be written to D1 output samples!
-    // 	  	for (j=0; j<D1; j++) {
-				// output1[i*D1+j] = buffer[i];
-    // 		}
-    // 	}
-    
-    	// DIGITAL_IO_RESET();
+	    	// README Print to serial
+	    	// block_count++;
+	    	// if (block_count == BLOCKS) {
+	    		// send_report(max_pos_ind, max_pos_freq, max_neg_ind, max_neg_freq);
+	    		// send_report(pos_vel, fft_in[0], neg_vel, fft_in[1]);
+	    		// block_count = 0;
+	    	// }
+	    
+	    	/* 
+	    	 * Write output values to the DAC....  NOTE: Be sure to set the output
+	    	 * array to values for every INPUT sample (not just samples at the decimated 
+	    	* rates!
+	    	*/
+	    // 	for (i=0; i<nsamp/D1; i++) {
+	    // 	  	// Every stage-3 output should be written to D1 output samples!
+	    // 	  	for (j=0; j<D1; j++) {
+					// output1[i*D1+j] = buffer[i];
+	    // 		}
+	    // 	}
+	    
+	    	// DIGITAL_IO_RESET();
     }
 
     	/*
