@@ -40,7 +40,7 @@
 
 #define N_TONES 4
 
-#define FS FS_96K
+#define FS FS_48K
 #define NSAMP 80
 #define BUFFERS_PER_SECOND 1200
 

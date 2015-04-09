@@ -67,7 +67,7 @@
 // #include "lowpass1_coef.h"
 
 #include "numtostr.h"
-void send_report(float x1, float x2, float x3, float x4);
+// void send_report(float x1, float x2, float x3, float x4);
 
 int main(void)
 {
@@ -87,7 +87,7 @@ int main(void)
 	 * Set up the required 50 ksps sample rate... Use the ADC to measure 
 	 * a function generator or a microphone input
 	 */
-	initialize(MY_FS, STEREO_IN, MONO_OUT);       // Set up: ADC input, DAC output
+	// initialize(FS_48K, STEREO_IN, MONO_OUT);       // Set up: ADC input, DAC output
 
 	
 
@@ -137,11 +137,11 @@ int main(void)
 	// 	flagerror(MEMORY_ALLOCATION_ERROR);
  	
  	// Error check memory allocation
- 	if (input1==NULL || input2==NULL){// || buffer_re==NULL || buffer_im==NULL || fft_in==NULL || mag==NULL) {
- 	// || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL
- 		flagerror(MEMORY_ALLOCATION_ERROR);
- 		while(1);
- 	}
+ 	// if (input1==NULL || input2==NULL){// || buffer_re==NULL || buffer_im==NULL || fft_in==NULL || mag==NULL) {
+ 	// // || buffer2==NULL || w_re==NULL || w_im==NULL || df==NULL
+ 	// 	flagerror(MEMORY_ALLOCATION_ERROR);
+ 	// 	while(1);
+ 	// }
   
  	// Filter initializations
 	// BIQUAD_T *low1_re = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, nsamp);
@@ -150,6 +150,9 @@ int main(void)
 	// DC blocker initialization
 	// DCBLOCK_T *dcblocker;
 	// dcblocker = init_dcblock(nsamp/D1);
+
+	initialize(FS_24K, STEREO_IN, MONO_OUT);       // Set up: ADC input, DAC output
+
 
 	char buf[20] = "Running\n\r";
 	char buf2[23];
@@ -167,7 +170,7 @@ int main(void)
 		 *   getblock() will wait until the input buffer is filled...  On return
 		 *   we work on the new data buffer.
 		 */
-		getblockstereo(input1,input2);	// Wait here until the input buffer is filled... 
+		// getblockstereo(input1,input2);	// Wait here until the input buffer is filled... 
     
     	/*
     	 * Stage 1:  Complete processing at the incoming sample frequency fs.
@@ -195,10 +198,10 @@ int main(void)
     	// }
     	block_count++;
 
-    	if (block_count == D2) {
-    		block_count = 0;
+    	// if (block_count == D2) {
+    	// 	block_count = 0;
     	
-	    	UART_putstr(buf);
+	    // 	UART_putstr(buf);
 
 	    	// Zero the rest of the fft_in array
 	    	// for (i=2*nsamp; i<2*FFT_N; i++) {
@@ -269,7 +272,7 @@ int main(void)
 	    // 	}
 	    
 	    	// DIGITAL_IO_RESET();
-    }
+    // }
 
     	/*
     	 * pass the (length MY_NSAMP) calculated buffers back for DAC output
@@ -279,35 +282,35 @@ int main(void)
   }
 }
 
-void send_report(float x1, float x2, float x3, float x4) {
-  // Send a comma-separated list of four numbers to the serial port,
-  // terminated by a newline.
-  static char outstr[100], *endstr;
+// void send_report(float x1, float x2, float x3, float x4) {
+//   // Send a comma-separated list of four numbers to the serial port,
+//   // terminated by a newline.
+//   static char outstr[100], *endstr;
   
-  endstr = outstr;
-  floattostr(x1, outstr, 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
+//   endstr = outstr;
+//   floattostr(x1, outstr, 2);
+//   while (*endstr != '\0') endstr++;
+//   *endstr = ',';
+//   endstr++;
 
-  floattostr(x2, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
+//   floattostr(x2, endstr , 2);
+//   while (*endstr != '\0') endstr++;
+//   *endstr = ',';
+//   endstr++;
   
-  //strcat(outstr, ", ");
-  floattostr(x3, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
+//   //strcat(outstr, ", ");
+//   floattostr(x3, endstr , 2);
+//   while (*endstr != '\0') endstr++;
+//   *endstr = ',';
+//   endstr++;
   
-  //strcat(outstr, ", ");
-  floattostr(x4, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  endstr[0] = '\n';
-  endstr[1] = '\0';
+//   //strcat(outstr, ", ");
+//   floattostr(x4, endstr , 2);
+//   while (*endstr != '\0') endstr++;
+//   endstr[0] = '\n';
+//   endstr[1] = '\0';
   
- //strcat(outstr,"\n");
-  UART_putstr(outstr);
-  return;
-}
+//  //strcat(outstr,"\n");
+//   UART_putstr(outstr);
+//   return;
+// }
