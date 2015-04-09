@@ -32,15 +32,14 @@
 // Define the decimation rate...
 #define MY_FS FS_48K
 #define D1 10
-#define D2 10
-#define MY_NSAMP 620
-// #define BLOCKS 4
+#define MY_NSAMP 6200
+#define BLOCKS 4
 #define FFT_N 1024
 #define FORWARD_FFT 0
 #define INVERSE_FFT 1
 
-#define POS_THRESHOLD 100.0
-#define NEG_THRESHOLD 100.0
+#define POS_THRESHOLD 40
+#define NEG_THRESHOLD 40
 
 
 #include "stm32f4xx_hal.h"
@@ -59,7 +58,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "arm_math.h"
-#include "arm_common_tables.h"
 
 // #include "ece486_fir.h"			// FIR filter routines
 #include "ece486_biquad.h"			// IIR filter routines
@@ -89,12 +87,13 @@ int main(void)
 	 */
 	initialize(MY_FS, STEREO_IN, STEREO_OUT);       // Set up: ADC input, DAC output
 
-	
+	char buf[20] = "Running\n\r";
+	UART_putstr(buf);
 
 	nsamp = getblocksize(); 	// get number of samples
 
 	// Index variables
-	int i, start, end;
+	int i;
 
 	// ADC inputs
 	float *input1 = (float *)malloc(sizeof(float)*nsamp);
@@ -113,27 +112,25 @@ int main(void)
  	// float32_t *fft_in = (float32_t *)malloc(sizeof(float32_t)*2*nsamp/D1);
 
  	// Magnitude of the FFT
- 	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*FFT_N);
+ 	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*FFT_N/2);
  	// float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*nsamp/D1);
 
 
  	// Maxima
  	int one_ms;
- 	float max_pos_val = 0.0;
- 	float max_neg_val = 0.0;
- 	float max_pos_ind = 0;
- 	float max_neg_ind = 0;
- 	float32_t max_pos_freq = 0.0;
- 	float32_t max_neg_freq = 0.0;
+ 	float32_t max_pos_val = 0;
+ 	float32_t max_neg_val = 0;
+ 	uint32_t max_pos_ind = 0;
+ 	uint32_t max_neg_ind = 0;
+ 	float32_t max_pos_freq = 0;
+ 	float32_t max_neg_freq = 0;
 
  	// Velocities
- 	float pos_vel, neg_vel;
+ 	float32_t pos_vel, neg_vel;
 
  	// Complex FFT structure initializations	
  	arm_cfft_radix2_instance_f32 fft;
-	arm_status status = arm_cfft_radix2_init_f32(&fft, FFT_N, FORWARD_FFT, 0);
-	if (status != ARM_MATH_SUCCESS)
-		flagerror(MEMORY_ALLOCATION_ERROR);
+	arm_cfft_radix2_init_f32(&fft, FFT_N, FORWARD_FFT, 0);
  	
  	// Error check memory allocation
  	if (input1==NULL || input2==NULL || buffer_re==NULL || buffer_im==NULL || fft_in==NULL || mag==NULL) {
@@ -150,17 +147,10 @@ int main(void)
 	// DCBLOCK_T *dcblocker;
 	// dcblocker = init_dcblock(nsamp/D1);
 
-	char buf[20] = "Running\n\r";
-	char buf2[3];
-	UART_putstr(buf);
-
 	/*
 	 * Infinite Loop to process the data stream "MY_NSAMP" samples at a time
 	 */
 	while(1){
-		inttostr(block_count,buf2);
-		UART_putstr(buf2);
-
 		/*
 		 * Ask for a block of ADC samples to be put into the working buffer
 		 *   getblock() will wait until the input buffer is filled...  On return
@@ -179,29 +169,24 @@ int main(void)
 		calc_biquad(low1_im,input2,input2);
 
     	// Decimate by D1
-    	for (i=0; i<nsamp/D1; i++) {
+    	for (i=0; i<MY_NSAMP/D1; i++) {
     		buffer_re[i] = input1[i*D1];
     		buffer_im[i] = input2[i*D1];
     	}
+    
+    	// Reject DC
+    	// calc_dcblock(dcblocker, buffer, buffer2);
 
-    	
-		start = block_count*nsamp/D1;
-		end = start + nsamp/D1;
+    	/*
+    	 * Stage 2:  Complete processing at the intermediate sample rate fs/D1.
+    	 *           (Array size MY_NSAMP/D1 samples)
+    	 */
+
     	// Interleave real and complex
-    	for (i=start; i<end; i++) {
+    	for (i=0; i<2*nsamp/D1; i++) {
     		fft_in[2*i] = buffer_re[i];
     		fft_in[2*i+1] = buffer_im[i];
     	}
-    	block_count++;
-
-    	if (block_count<D2) {
-    		continue;
-    	} else {
-    		block_count = 0;
-    	// }
-    	
-    	UART_putstr(buf);
-
     	// Zero the rest of the fft_in array
     	for (i=2*nsamp/D1; i<FFT_N; i++) {
     		fft_in[i] = 0.0;
@@ -210,13 +195,8 @@ int main(void)
     	// Calculate complex fft
     	arm_cfft_radix2_f32(&fft, fft_in);
 
-    	DIGITAL_IO_RESET();
-
     	// Calculate complex magnitude
-    	// for (i=0; i<FFT_N; i++) {
-    	// 	mag[i] = sqrt(fft_in[2*i]*fft_in[2*i] + fft_in[2*i+1]*fft_in[2*i+1]);
-    	// }
-    	arm_cmplx_mag_f32(fft_in, mag, FFT_N);	// This one maybe
+    	arm_cmplx_mag_f32(fft_in, mag, FFT_N);
     	// arm_cmplx_mag_f32(fft_in, mag, nsamp/D1);
 
     	// README Find maximum of positive (first half array) and negative (2nd half) frequencies
@@ -241,8 +221,8 @@ int main(void)
     	}
 
     	// Un-normalize frequency
-    	max_pos_freq = (max_pos_ind/1024.0) * 48000.0 / 10.0;
-    	max_neg_freq = ( (max_neg_ind - 1024.0)/1024.0 ) * 48000.0 / 10.0;
+    	max_pos_freq = (max_pos_ind/FFT_N) * MY_FS / D1;
+    	max_neg_freq = ( (max_neg_ind)/FFT_N-1) * MY_FS / D1;
 
     	// README Calculate velocity
 		// pos_vel = max_pos_freq * 3e8 / (2*5.8e9)
@@ -251,12 +231,11 @@ int main(void)
 
 
     	// README Print to serial
-    	// block_count++;
-    	// if (block_count == BLOCKS) {
-    		// send_report(max_pos_ind, max_pos_freq, max_neg_ind, max_neg_freq);
-    		send_report(pos_vel, fft_in[924], neg_vel, fft_in[925]);
-    		// block_count = 0;
-    	// }
+    	block_count++;
+    	if (block_count == BLOCKS) {
+    		send_report(pos_vel, max_pos_val, neg_vel, max_neg_val);
+    		block_count = 0;
+    	}
     
     	/* 
     	 * Write output values to the DAC....  NOTE: Be sure to set the output
@@ -270,13 +249,12 @@ int main(void)
     // 		}
     // 	}
     
-    	// DIGITAL_IO_RESET();
-    }
+    	DIGITAL_IO_RESET();
 
     	/*
     	 * pass the (length MY_NSAMP) calculated buffers back for DAC output
     	 */
-    	// putblockstereo(output1, output2);
+    	putblockstereo(output1, output2);
       
   }
 }
