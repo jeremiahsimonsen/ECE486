@@ -12,12 +12,11 @@
  * processing for a doppler radar detector.
  *
  * A 5.8 GHz signal is transmitted from one antenna. The signal reflects off of
- * objects. Moving objects cause a change in frequency known as doppler shift,
+ * objects. Moving objects cause a change in frequency known as Doppler shift,
  * roughly proportional to their velocity. The reflected signal is received by
  * a second antenna and split into two signals 90 degrees out of phase. Each
- * signal is mixed with the transmitted signal to shift the spectrum down so
- * it is centered at DC. The mixed signals are then low-passed filtered and 
- * sampled by the STM32F407 development board.
+ * signal is mixed with the transmitted signal to find the difference frequency, which corresponds to the Doppler shift. 
+ * The mixed signals are then low-passed filtered and sampled by the STM32F407 development board.
  * 
  * The two ADC inputs are sampled at 24 ksps. The signals are lowpass filtered
  * to limit the bandwidth to 2 kHz (equivalent to about 50 m/s). The sampled
