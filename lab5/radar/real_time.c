@@ -30,16 +30,16 @@
 
 // Define the decimation rate...
 #define MY_FS 24000.0
-#define D1 10
-#define D2 10
-#define MY_NSAMP 620
-// #define BLOCKS 40
+#define D1 4
+#define D2 4
+#define MY_NSAMP 776
+#define BLOCKS 16
 #define FFT_N 1024
 #define FORWARD_FFT 0
 #define INVERSE_FFT 1
 
-#define POS_THRESHOLD 0.0
-#define NEG_THRESHOLD 0.0
+#define POS_THRESHOLD 10.0
+#define NEG_THRESHOLD 10.0
 
 
 #include "stm32f4xx_hal.h"
@@ -70,6 +70,7 @@ void send_report(float x1, float x2, float x3, float x4);
 int main(void)
 {
 	static int block_count = 0;
+	static int total_blocks = 0;
 
 	// Set the ADC/DAC Block size; note the code below assumes MY_NSAMP is a
 	// multiple of D1
@@ -133,8 +134,8 @@ int main(void)
 
 	// Infinite Loop to process the data stream "MY_NSAMP" samples at a time
 	while(1){
-		inttostr(block_count,buf2);
-		UART_putstr(buf2);
+		// inttostr(block_count,buf2);
+		// UART_putstr(buf2);
 
 		// Collect a block of samples from the ADC; waits until the input
 		// buffer is filled
@@ -167,11 +168,12 @@ int main(void)
     		fft_in[start+2*i+1] = buffer_im[i];
     	}
     	block_count++;
+    	total_blocks++;
 
     	if (block_count == D2) {
     		block_count = 0;
     	
-	    	UART_putstr(buf);
+	    	// UART_putstr(buf);
 
 	    	// Zero the rest of the fft_in array
 	    	for (i=2*MY_NSAMP; i<2*FFT_N; i++) {
@@ -219,11 +221,11 @@ int main(void)
 
 	    	// README Print to serial
 	    	// block_count++;
-	    	// if (block_count == BLOCKS) {
+	    	if (total_blocks % BLOCKS == 0) {
 	    		// send_report(max_pos_ind, max_pos_freq, max_neg_ind, max_neg_freq);
 	    		send_report(pos_vel, fft_in[0], neg_vel, fft_in[1]);
 	    		// block_count = 0;
-	    	// }
+	    	}
 	    
 	    	/* 
 	    	 * Write output values to the DAC....  NOTE: Be sure to set the output
@@ -243,7 +245,7 @@ int main(void)
     	/*
     	 * pass the (length MY_NSAMP) calculated buffers back for DAC output
     	 */
-    	// putblockstereo(output1, output2);
+    	// putblockstereo(input1, input2);
       
   }
 }
