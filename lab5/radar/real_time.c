@@ -179,6 +179,8 @@ int main(void)
 	    	for (i=2*MY_NSAMP; i<2*FFT_N; i++) {
 	    		fft_in[i] = 0.0;
 	    	}
+			
+			// Windowing here may be helpful to discern between frequencies if the velocities are close together
 
 	    	// Calculate complex fft
 	    	arm_cfft_radix2_f32(&fft, fft_in);

@@ -1,7 +1,16 @@
 % Author: ECE486 Spring 2015 Lab Group 2
 % Author: Jacob Allenwood, Travis Russell, Jeremiah Simonsen
-
-% elliptical filters give lowest order, so they are used by default
+% Date: 04/10/15
+%
+% This script gives a basic outline to design an elliptical filter.
+% Elliptical filters give lowest order, so they are used by default.
+% 
+% This script is currently setup to design a bandpass filter that
+% that has less than 0.1 dB ripple in the pass band of 12 kHz to 15 kHz.
+% A stop band of 70 dB is achieved beyond 11.2 kHz and under 16 kHz.
+%
+% The values can easily be modified to design other band pass and low pass
+% filters.
 
 Fs = 48e3; % sampling frequency
 Wp = [12e3 15e3]; % enter the pass band frequencies (2 for BP, 1 for LP/HP)
