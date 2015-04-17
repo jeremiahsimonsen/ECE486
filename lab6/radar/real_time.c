@@ -130,7 +130,8 @@ int main(void)
 
 	char buf[20] = "Running\n\r";
 	char buf2[23];
-	UART_putstr(buf);
+	// UART_putstr(buf);
+	DIGITAL_IO_SET(buf);
 
 	// Infinite Loop to process the data stream "MY_NSAMP" samples at a time
 	while(1){
@@ -281,6 +282,8 @@ void send_report(float x1, float x2, float x3, float x4) {
   endstr[1] = '\0';
   
  //strcat(outstr,"\n");
-  UART_putstr(outstr);
+  // UART_putstr(outstr);
+  // use DIGITAL_IO_SET()
+  DIGITAL_IO_SET(outstr);
   return;
 }
