@@ -1,5 +1,5 @@
 # Target definitions
-TARGET = lab5
+TARGET = lab6
 
 # Object definitions
 FILTERS = ARM_biquad.o ARM_fir.o

@@ -1,12 +1,12 @@
 /*!
  * @file
  * 
- * @brief ECE 486 Spring 2015 Lab 5 DSP for a doppler radar detector
+ * @brief ECE 486 Spring 2015 Lab 6 DSP for a doppler radar detector
  * 
  * @author ECE486 Lab Group 2
  * @author Jacob Allenwood, Travis Russell, Jeremiah Simonsen
  * 
- * @date Apr 10, 2015
+ * @date Apr 24, 2015
  * 
  * This file contains the real-time implementation of the digital signal
  * processing for a doppler radar detector.
@@ -70,7 +70,6 @@ void send_report(float x1, float x2, float x3, float x4);
 int main(void)
 {
 	static int block_count = 0;
-	static int total_blocks = 0;
 
 	// Set the ADC/DAC Block size; note the code below assumes MY_NSAMP is a
 	// multiple of D1
@@ -82,12 +81,15 @@ int main(void)
 	// Index variables
 	int i, start;
 
+	// Which velocities to send to the DAC
+	int positives = 1;
+
 	// ADC inputs
 	float *input1 = (float *)malloc(sizeof(float)*MY_NSAMP);
 	float *input2 = (float *)malloc(sizeof(float)*MY_NSAMP);
 
  	// DAC outputs
- 	// float *output1 = (float *)malloc(sizeof(float)*MY_NSAMP);
+ 	float *output1 = (float *)malloc(sizeof(float)*MY_NSAMP);
  	// float *output2 = (float *)malloc(sizeof(float)*MY_NSAMP);
 
  	// Decimated real and imaginary signals; outputs of lowpass filter
@@ -101,16 +103,18 @@ int main(void)
  	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*FFT_N);
 
  	// Maxima
- 	int one_ms;
- 	float max_pos_val = 0.0;
- 	float max_neg_val = 0.0;
- 	float max_pos_ind = 0;
- 	float max_neg_ind = 0;
- 	float32_t max_pos_freq = 0.0;
- 	float32_t max_neg_freq = 0.0;
+ 	// int one_ms;
+ 	// float max_pos_val = 0.0;
+ 	// float max_neg_val = 0.0;
+ 	// float max_pos_ind = 0;
+ 	// float max_neg_ind = 0;
+ 	// float32_t max_pos_freq = 0.0;
+ 	// float32_t max_neg_freq = 0.0;
+ 	float32_t max_fft = 1.0;
+ 	uint32_t max_ind = 0;
 
  	// Velocities
- 	float pos_vel, neg_vel;
+ 	// float pos_vel, neg_vel;
 
  	// Complex FFT structure initializations	
  	arm_cfft_radix2_instance_f32 fft;
@@ -119,7 +123,7 @@ int main(void)
 		flagerror(MEMORY_ALLOCATION_ERROR);
  	
  	// Error check memory allocation
- 	if (input1==NULL || input2==NULL || buffer_re==NULL || buffer_im==NULL || fft_in==NULL || mag==NULL) {
+ 	if (input1==NULL || input2==NULL || output1==NULL || buffer_re==NULL || buffer_im==NULL || fft_in==NULL || mag==NULL) {
  		flagerror(MEMORY_ALLOCATION_ERROR);
  		while(1);
  	}
@@ -128,20 +132,17 @@ int main(void)
 	BIQUAD_T *low1_re = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, MY_NSAMP);
 	BIQUAD_T *low1_im = init_biquad(lowpass_num_stages, lowpass_g, lowpass_a_coef, lowpass_b_coef, MY_NSAMP);
 
-	char buf[20] = "Running\n\r";
-	char buf2[23];
-	// UART_putstr(buf);
-	DIGITAL_IO_SET(buf);
 
 	// Infinite Loop to process the data stream "MY_NSAMP" samples at a time
 	while(1){
-		// inttostr(block_count,buf2);
-		// UART_putstr(buf2);
+		DIGITAL_IO_SET();
 
 		// Collect a block of samples from the ADC; waits until the input
 		// buffer is filled
 		getblockstereo(input1,input2);
     
+    	DIGITAL_IO_RESET();
+
     	/*
     	 * Stage 1:  Complete processing at the incoming sample frequency fs.
     	 *           (Array size MY_NSAMP samples)
@@ -158,8 +159,6 @@ int main(void)
     		buffer_im[i] = input2[i*D1];
     	}
 
-    	// README Should i begin at 'start' or 0?
-
     	// We are going to wait for several blocks of input samples, so keep
     	// track of the index to start inserting new samples at
 		start = block_count*2*MY_NSAMP/D1;
@@ -169,12 +168,9 @@ int main(void)
     		fft_in[start+2*i+1] = buffer_im[i];
     	}
     	block_count++;
-    	total_blocks++;
 
     	if (block_count == D2) {
     		block_count = 0;
-    	
-	    	// UART_putstr(buf);
 
 	    	// Zero the rest of the fft_in array
 	    	for (i=2*MY_NSAMP; i<2*FFT_N; i++) {
@@ -197,93 +193,57 @@ int main(void)
 
 	    	// Only search frequencies corresponding to 1 m/s or above; 1 m/s
 	    	// corresponds to 38.667 Hz
-	    	one_ms = (int) 38.667/MY_FS/D1*FFT_N;	// Calculate index of 1 m/s
+	    	// one_ms = (int) 38.667/MY_FS/D1*FFT_N;	// Calculate index of 1 m/s
 
-	    	for (i=one_ms; i<FFT_N/2; i++) {
-	    		if (mag[i] > POS_THRESHOLD) {
-	    			max_pos_val = mag[i];
-	    			max_pos_ind = i;
-	    		}
-	    		if (mag[FFT_N-1-i] > NEG_THRESHOLD) {
-	    			max_neg_val = mag[FFT_N-1-i];
-	    			max_neg_ind = FFT_N-1-i;
-	    		}
-	    	}
+	    	// for (i=one_ms; i<FFT_N/2; i++) {
+	    	// 	if (mag[i] > POS_THRESHOLD) {
+	    	// 		max_pos_val = mag[i];
+	    	// 		max_pos_ind = i;
+	    	// 	}
+	    	// 	if (mag[FFT_N-1-i] > NEG_THRESHOLD) {
+	    	// 		max_neg_val = mag[FFT_N-1-i];
+	    	// 		max_neg_ind = FFT_N-1-i;
+	    	// 	}
+	    	// }
 
 	    	// Un-normalize frequency
-	    	max_pos_freq = (max_pos_ind / ((float)FFT_N) ) * MY_FS / ((float)D1);
-	    	max_neg_freq = ( (max_neg_ind / ((float)FFT_N) ) - 1) * MY_FS / ((float)D1);
+	    	// max_pos_freq = (max_pos_ind / ((float)FFT_N) ) * MY_FS / ((float)D1);
+	    	// max_neg_freq = ( (max_neg_ind / ((float)FFT_N) ) - 1) * MY_FS / ((float)D1);
 	    	// max_pos_freq = (max_pos_ind/1024.0) * 48000.0 / 10.0;
 	    	// max_neg_freq = ( (max_neg_ind - 1024.0)/1024.0 ) * 48000.0 / 10.0;
 
-	    	// README Calculate velocity
+	    	// Calculate velocity
 			// pos_vel = max_pos_freq * 3e8 / (2*5.8e9)
-			pos_vel = max_pos_freq * 0.025862068966;
-			neg_vel = max_neg_freq * 0.025862068966;
+			// pos_vel = max_pos_freq * 0.025862068966;
+			// neg_vel = max_neg_freq * 0.025862068966;
 
+	    
+	    	// Detect button presses to switch what is being sent to the DAC
+	    	if(UserButtonPressed==Button_Pressed) {		// Button Press?
+				positives = !positives;
 
-	    	// README Print to serial
-	    	// block_count++;
-	    	if (total_blocks % BLOCKS == 0) {
-	    		// send_report(max_pos_ind, max_pos_freq, max_neg_ind, max_neg_freq);
-	    		send_report(pos_vel, fft_in[0], neg_vel, fft_in[1]);
-	    		// block_count = 0;
-	    	}
-	    
-	    	/* 
-	    	 * Write output values to the DAC....  NOTE: Be sure to set the output
-	    	 * array to values for every INPUT sample (not just samples at the decimated 
-	    	* rates!
-	    	*/
-	    // 	for (i=0; i<MY_NSAMP/D1; i++) {
-	    // 	  	// Every stage-3 output should be written to D1 output samples!
-	    // 	  	for (j=0; j<D1; j++) {
-					// output1[i*D1+j] = buffer[i];
-	    // 		}
-	    // 	}
-	    
-	    	// DIGITAL_IO_RESET();
+				UserButtonPressed = Button_Ready;
+		    }
+		    
+		    arm_max_f32(mag,FFT_N,&max_fft,&max_ind);
+
+		    // Write output values to the DAC
+		    for(i=0; i<FFT_N/2; i++) {
+		    	if (positives) {
+		    		// arm_max_f32(mag,FFT_N/2,&max_fft,&max_ind);
+		    		output1[i] = mag[i]/max_fft;
+		    	} else {
+		    		// arm_max_f32(mag,FFT_N/2,&max_fft,&max_ind);
+		    		output1[i] = mag[FFT_N-1-i]/max_ffts;
+		    	}
+		    }
+		    for(i=FFT_N/2; i<MY_NSAMP; i++) {
+		    	output1[i] = 0.0;
+		    }
     	}
 
-    	/*
-    	 * pass the (length MY_NSAMP) calculated buffers back for DAC output
-    	 */
-    	// putblockstereo(input1, input2);
+    	// Pass output buffer to the DAC
+    	putblock(output1);
       
   }
-}
-
-void send_report(float x1, float x2, float x3, float x4) {
-  // Send a comma-separated list of four numbers to the serial port,
-  // terminated by a newline.
-  static char outstr[100], *endstr;
-  
-  endstr = outstr;
-  floattostr(x1, outstr, 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
-
-  floattostr(x2, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
-  
-  //strcat(outstr, ", ");
-  floattostr(x3, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
-  
-  //strcat(outstr, ", ");
-  floattostr(x4, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  endstr[0] = '\n';
-  endstr[1] = '\0';
-  
- //strcat(outstr,"\n");
-  // UART_putstr(outstr);
-  // use DIGITAL_IO_SET()
-  DIGITAL_IO_SET(outstr);
-  return;
 }
