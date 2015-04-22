@@ -131,7 +131,7 @@ int main(void)
 	char buf[20] = "Running\n\r";
 	char buf2[23];
 	// UART_putstr(buf);
-	DIGITAL_IO_SET(buf);
+	DIGITAL_IO_SET();
 
 	// Infinite Loop to process the data stream "MY_NSAMP" samples at a time
 	while(1){
@@ -195,6 +195,10 @@ int main(void)
 	    	// negative velocities. Positive frequencies are in the first half
 	    	// of the 'mag' array, negatives in the second
 
+
+	    	// frequency range is going to be:
+	    	// 1v == 5.8Mhz - 75Mhz
+	    	// 2v == 5.8Mhz
 	    	// Only search frequencies corresponding to 1 m/s or above; 1 m/s
 	    	// corresponds to 38.667 Hz
 	    	one_ms = (int) 38.667/MY_FS/D1*FFT_N;	// Calculate index of 1 m/s
@@ -226,7 +230,7 @@ int main(void)
 	    	// block_count++;
 	    	if (total_blocks % BLOCKS == 0) {
 	    		// send_report(max_pos_ind, max_pos_freq, max_neg_ind, max_neg_freq);
-	    		send_report(pos_vel, fft_in[0], neg_vel, fft_in[1]);
+	    		putblockstereo(pos_vel, fft_in[0], neg_vel, fft_in[1]);
 	    		// block_count = 0;
 	    	}
 	    
@@ -253,37 +257,37 @@ int main(void)
   }
 }
 
-void send_report(float x1, float x2, float x3, float x4) {
-  // Send a comma-separated list of four numbers to the serial port,
-  // terminated by a newline.
-  static char outstr[100], *endstr;
+// void send_report(float x1, float x2, float x3, float x4) {
+//   // Send a comma-separated list of four numbers to the serial port,
+//   // terminated by a newline.
+//   static char outstr[100], *endstr;
   
-  endstr = outstr;
-  floattostr(x1, outstr, 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
+//   endstr = outstr;
+//   floattostr(x1, outstr, 2);
+//   while (*endstr != '\0') endstr++;
+//   *endstr = ',';
+//   endstr++;
 
-  floattostr(x2, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
+//   floattostr(x2, endstr , 2);
+//   while (*endstr != '\0') endstr++;
+//   *endstr = ',';
+//   endstr++;
   
-  //strcat(outstr, ", ");
-  floattostr(x3, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  *endstr = ',';
-  endstr++;
+//   //strcat(outstr, ", ");
+//   floattostr(x3, endstr , 2);
+//   while (*endstr != '\0') endstr++;
+//   *endstr = ',';
+//   endstr++;
   
-  //strcat(outstr, ", ");
-  floattostr(x4, endstr , 2);
-  while (*endstr != '\0') endstr++;
-  endstr[0] = '\n';
-  endstr[1] = '\0';
+//   //strcat(outstr, ", ");
+//   floattostr(x4, endstr , 2);
+//   while (*endstr != '\0') endstr++;
+//   endstr[0] = '\n';
+//   endstr[1] = '\0';
   
- //strcat(outstr,"\n");
-  // UART_putstr(outstr);
-  // use DIGITAL_IO_SET()
-  DIGITAL_IO_SET(outstr);
-  return;
-}
+//  //strcat(outstr,"\n");
+//   // UART_putstr(outstr);
+//   // use DIGITAL_IO_SET()
+//   DIGITAL_IO_SET(outstr);
+//   return;
+// }
