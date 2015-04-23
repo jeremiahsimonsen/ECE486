@@ -658,9 +658,10 @@ int main(void)
     	// 	buffer_im[i] = input2[i*D1];
     	// }
 
-    	// We are going to wait for several blocks of input samples, so keep
-    	// track of the index to start inserting new samples at
-		// start = block_count*2*MY_NSAMP/D1;
+    	// Windowing here may be helpful to discern between frequencies if the velocities are close together
+	    calc_mixer(window_mix, input1, input1);	// OK to use same mixer b/c
+	    calc_mixer(window_mix, input2, input2);	// input1 & kaiser same size
+
     	// Interleave real and complex arrays for arm function format purposes
     	for (i=0; i<MY_NSAMP; i++) {
     		fft_in[2*i] = input1[i];
@@ -675,9 +676,6 @@ int main(void)
 	    	for (i=2*MY_NSAMP; i<2*FFT_N; i++) {
 	    		fft_in[i] = 0.0;
 	    	}
-			
-			// Windowing here may be helpful to discern between frequencies if the velocities are close together
-	    	calc_mixer(window_mix, fft_in, fft_in);
 
 	    	// Calculate complex fft
 	    	arm_cfft_radix2_f32(&fft, fft_in);
