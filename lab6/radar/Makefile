@@ -2,7 +2,7 @@
 TARGET = lab6
 
 # Object definitions
-FILTERS = ARM_biquad.o ARM_fir.o
+FILTERS = ARM_biquad.o ARM_fir.o mixer.o
 COEFS = lowpass1_coef.o
 BOARD = real_time.o
 OBJS = $(FILTERS) $(COEFS) $(BOARD) numtostr.o
@@ -66,6 +66,9 @@ lowpass1_coef.o: lowpass1_coef.c lowpass1_coef.h
 
 numtostr.o: numtostr.c numtostr.h
 	$(CC) -c numtostr.c -o numtostr.o $(CFLAGS)
+
+mixer.o: ece486_mixer.c ece486_mixer.h
+	$(CC) -c ece486_mixer.c -o mixer.o $(CFLAGS)
 
 flash: $(TARGET).bin
 	st-flash write $(TARGET).bin 0x08000000
