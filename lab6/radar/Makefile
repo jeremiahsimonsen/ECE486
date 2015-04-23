@@ -1,11 +1,14 @@
 # Target definitions
-TARGET = lab6
+TARGET1 = task1
+TARGET2 = task2
 
 # Object definitions
-FILTERS = ARM_biquad.o ARM_fir.o mixer.o
+FILTERS = ARM_biquad.o
 COEFS = lowpass1_coef.o
 BOARD = real_time.o
-OBJS = $(FILTERS) $(COEFS) $(BOARD) numtostr.o
+BOARD2 = real_time_stepped.o
+OBJS = $(FILTERS) $(COEFS) $(BOARD) mixer.o
+OBJS2 = mixer.o $(BOARD2) 
 #rejectDC.o dcblock.o
 
 #  Support either ARCH=STM32F429xx or ARCH=STM32F407xx
@@ -41,18 +44,25 @@ LDFLAGS = -Wl,-T$(LINKSCRIPT) \
 
 ################################################################
 # Rules
-all: $(TARGET) $(TARGET).bin
+all: $(TARGET1) $(TARGET1).bin $(TARGET2) $(TARGET2).bin
 
 debug : CFLAGS += -DDEBUG -g -Og
-debug : LDFLAGS += -Wl,-Map,$(TARGET).map
+debug : LDFLAGS += -Wl,-Map,$(TARGET1).map
 
 debug : all
-# Target
-$(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LIBS)
+# Target1
+$(TARGET1): $(OBJS)
+	$(CC) -o $(TARGET1) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LIBS)
 
-$(TARGET).bin: $(TARGET)
-	$(OBJCOPY) -Obinary $(TARGET) $(TARGET).bin
+$(TARGET1).bin: $(TARGET1)
+	$(OBJCOPY) -Obinary $(TARGET1) $(TARGET1).bin
+
+# Target2
+$(TARGET2): $(OBJS2)
+	$(CC) -o $(TARGET2) $(CFLAGS) $(LDFLAGS) $(OBJS2) $(LIBS)
+
+$(TARGET2).bin: $(TARGET2)
+	$(OBJCOPY) -Obinary $(TARGET2) $(TARGET2).bin
 
 # Dependencies
 ARM_biquad.o: ece486_biquad.c ece486_biquad.h
@@ -64,14 +74,14 @@ ARM_fir.o: ece486_fir.c ece486_fir.h
 lowpass1_coef.o: lowpass1_coef.c lowpass1_coef.h
 	$(CC) -c lowpass1_coef.c -o lowpass1_coef.o $(CFLAGS)
 
-numtostr.o: numtostr.c numtostr.h
-	$(CC) -c numtostr.c -o numtostr.o $(CFLAGS)
-
 mixer.o: ece486_mixer.c ece486_mixer.h
 	$(CC) -c ece486_mixer.c -o mixer.o $(CFLAGS)
 
-flash: $(TARGET).bin
-	st-flash write $(TARGET).bin 0x08000000
+flash1: $(TARGET1).bin
+	st-flash write $(TARGET1).bin 0x08000000
+
+flash2: $(TARGET2).bin
+	st-flash write $(TARGET2).bin 0x08000000
 
 clean:
-	rm -f $(OBJS) $(TARGET) $(TARGET).bin $(TARGET).map;
+	rm -f $(OBJS) $(TARGET1) $(TARGET1).bin $(TARGET1).map $(OBJS2) $(TARGET2) $(TARGET2).bin $(TARGET2).map;

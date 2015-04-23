@@ -1005,7 +1005,7 @@ int main(void)
 				UserButtonPressed = Button_Ready;
 		    }
 		    
-		    arm_max_f32(mag,FFT_N,&max_fft,&max_ind);
+		    arm_max_f32(&mag[20],FFT_N-20,&max_fft,&max_ind);
 
 		    // Write output values to the DAC
 		    for(i=0; i<FFT_N/2; i++) {
