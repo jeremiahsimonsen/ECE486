@@ -30,7 +30,6 @@
  * 
  */
 
-// Define the decimation rate...
 #define MY_FS 24000.0
 #define D1 4
 #define D2 4
@@ -39,10 +38,6 @@
 #define FFT_N 1024
 #define FORWARD_FFT 0
 #define INVERSE_FFT 1
-
-// #define POS_THRESHOLD 10.0
-// #define NEG_THRESHOLD 10.0
-
 
 #include "stm32f4xx_hal.h"
 
@@ -962,15 +957,13 @@ int main(void)
 				UserButtonPressed = Button_Ready;
 		    }
 		    
-		    arm_max_f32(&mag[20],FFT_N-20,&max_fft,&max_ind);
+		    arm_max_f32(&mag[20],FFT_N-20,&max_fft,&max_ind); // calculate max
 
 		    // Write output values to the DAC
 		    for(i=0; i<FFT_N/2; i++) {
 		    	if (positives) {
-		    		// arm_max_f32(&mag[0],FFT_N/2,&max_fft,&max_ind);
 		    		output1[i] = (mag[i]/(max_fft/2.0)) - 1.0;
 		    	} else {
-		    		// arm_max_f32(&mag[FFT_N/2],FFT_N/2,&max_fft,&max_ind);
 		    		output1[i] = (mag[FFT_N-1-i]/(max_fft/2.0)) - 1.0;
 		    	}
 		    }
