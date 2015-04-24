@@ -76,7 +76,6 @@ int main(void)
 	float *input2 = (float *)malloc(sizeof(float)*MY_NSAMP);
 
  	// DAC outputs
- 	// float *output1 = (float *)malloc(sizeof(float)*MY_NSAMP);
  	float *output2 = (float *)malloc(sizeof(float)*MY_NSAMP);
 
  	// Input (and output) to the complex FFT; interleaved of above and zero pad
@@ -358,6 +357,7 @@ int main(void)
 		    0.9948,
 		    1.0000};
 
+		    // Windowing
 	float kaiser[256] = {0.0023,
 		    0.0030,
 		    0.0037,
@@ -651,7 +651,7 @@ int main(void)
     	// Calculate complex magnitude
     	arm_cmplx_mag_f32(fft_in, mag, FFT_N);
     
-	    arm_max_f32(&mag[20],FFT_N/2-20,&max_fft,&max_ind);
+	    arm_max_f32(&mag[20],FFT_N/2-20,&max_fft,&max_ind); // calculate max value
 
 	    for (i=0; i<MY_NSAMP; i++) {
 	    	output2[i] = (mag[i]/(max_fft/2.0)) - 1.0;
