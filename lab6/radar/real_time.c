@@ -23,8 +23,10 @@
  * signals are decimated to reduce the necessary processing time. An FFT is
  * performed to examine the spectrum of the complex input signal. The highest
  * positive and negative velocities are detected by taking the highest positive
- * and negative frequencies with FFT component above a certain threshold. These
- * velocities are then written to the serial port, so they can be read.
+ * and negative frequencies with FFT component above a certain threshold. 
+ * Instead of using UART the DIGITAL_IO_SET() and DIGITAL_IO_RESET() functions are used to indicate each input 
+ * buffer processed, and send an output to the DAC which gives a “velocity profile” 
+ * to illustrate the detection of moving objects.
  * 
  */
 
@@ -102,19 +104,8 @@ int main(void)
  	// Magnitude of the FFT
  	float32_t *mag = (float32_t *)malloc(sizeof(float32_t)*FFT_N);
 
- 	// Maxima
- 	// int one_ms;
- 	// float max_pos_val = 0.0;
- 	// float max_neg_val = 0.0;
- 	// float max_pos_ind = 0;
- 	// float max_neg_ind = 0;
- 	// float32_t max_pos_freq = 0.0;
- 	// float32_t max_neg_freq = 0.0;
  	float32_t max_fft = 1.0;
  	uint32_t max_ind = 0;
-
- 	// Velocities
- 	// float pos_vel, neg_vel;
 
  	// Complex FFT structure initializations	
  	arm_cfft_radix2_instance_f32 fft;
@@ -926,7 +917,6 @@ int main(void)
     	 * Stage 1:  Complete processing at the incoming sample frequency fs.
     	 *           (Array size MY_NSAMP samples)
     	 */
-		// DIGITAL_IO_SET();
 
     	// Lowpass filter
 		calc_biquad(low1_re,input1,input1);
@@ -962,41 +952,8 @@ int main(void)
 	    	// Calculate complex fft
 	    	arm_cfft_radix2_f32(&fft, fft_in);
 
-	    	// DIGITAL_IO_RESET();
-
 	    	// Calculate complex magnitude
 	    	arm_cmplx_mag_f32(fft_in, mag, FFT_N);
-
-	    	// Find the frequencies corresponding to the highest positive and
-	    	// negative velocities. Positive frequencies are in the first half
-	    	// of the 'mag' array, negatives in the second
-
-	    	// Only search frequencies corresponding to 1 m/s or above; 1 m/s
-	    	// corresponds to 38.667 Hz
-	    	// one_ms = (int) 38.667/MY_FS/D1*FFT_N;	// Calculate index of 1 m/s
-
-	    	// for (i=one_ms; i<FFT_N/2; i++) {
-	    	// 	if (mag[i] > POS_THRESHOLD) {
-	    	// 		max_pos_val = mag[i];
-	    	// 		max_pos_ind = i;
-	    	// 	}
-	    	// 	if (mag[FFT_N-1-i] > NEG_THRESHOLD) {
-	    	// 		max_neg_val = mag[FFT_N-1-i];
-	    	// 		max_neg_ind = FFT_N-1-i;
-	    	// 	}
-	    	// }
-
-	    	// Un-normalize frequency
-	    	// max_pos_freq = (max_pos_ind / ((float)FFT_N) ) * MY_FS / ((float)D1);
-	    	// max_neg_freq = ( (max_neg_ind / ((float)FFT_N) ) - 1) * MY_FS / ((float)D1);
-	    	// max_pos_freq = (max_pos_ind/1024.0) * 48000.0 / 10.0;
-	    	// max_neg_freq = ( (max_neg_ind - 1024.0)/1024.0 ) * 48000.0 / 10.0;
-
-	    	// Calculate velocity
-			// pos_vel = max_pos_freq * 3e8 / (2*5.8e9)
-			// pos_vel = max_pos_freq * 0.025862068966;
-			// neg_vel = max_neg_freq * 0.025862068966;
-
 	    
 	    	// Detect button presses to switch what is being sent to the DAC
 	    	if(UserButtonPressed==Button_Pressed) {		// Button Press?
